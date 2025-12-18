@@ -28,3 +28,4 @@ public class DeviceOwnershipRecord {
     public LocalDateTime getOwnershipDate() { return ownershipDate; }
     public void setOwnershipDate(LocalDateTime ownershipDate) { this.ownershipDate = ownershipDate; }
 }
+
