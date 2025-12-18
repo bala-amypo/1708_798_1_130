@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.entity.DeviceOwnershipRecord;
+import com.example.demo.model.DeviceOwnershipRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

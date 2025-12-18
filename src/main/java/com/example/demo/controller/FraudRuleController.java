@@ -1,5 +1,5 @@
 package com.example.demo.controller;
-import com.example.demo.entity.FraudRule;
+import com.example.demo.model.FraudRule;
 import com.example.demo.service.FraudRuleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;

@@ -1,5 +1,5 @@
 package com.example.demo.controller;
-import com.example.demo.entity.StolenDeviceReport;
+import com.example.demo.model.StolenDeviceReport;
 import com.example.demo.service.StolenDeviceService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
