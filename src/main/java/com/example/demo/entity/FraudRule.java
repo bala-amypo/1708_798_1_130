@@ -1,33 +1,22 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-// @Table(name = "FraudRule")
 public class FraudRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String ruleCode;
 
-    @Column(nullable = false)
     private String description;
-
-    @Column(nullable = false)
     private String ruleType;
-
-    @Column(nullable = false)
     private Boolean active;
 
-    // Getters & Setters
+    public FraudRule() {}
 
     public Long getId() {
         return id;
