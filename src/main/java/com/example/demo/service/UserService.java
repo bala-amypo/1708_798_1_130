@@ -1,8 +1,8 @@
-package com.example.demo.service;
+// package com.example.demo.service;
 
-import com.example.demo.dto.*;
+// import com.example.demo.dto.*;
 
-public interface UserService {
-    void registerUser(RegisterRequest req);
-    AuthResponse loginUser(LoginRequest req);
-}
+// public interface UserService {
+//     void registerUser(RegisterRequest req);
+//     AuthResponse loginUser(LoginRequest req);
+// }
