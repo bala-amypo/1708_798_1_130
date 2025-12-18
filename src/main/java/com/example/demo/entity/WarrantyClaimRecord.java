@@ -11,7 +11,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "warranty_claim_record")
 public class WarrantyClaimRecord {
 
     @Id

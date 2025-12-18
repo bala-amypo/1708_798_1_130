@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "device_ownership_record")
 public class DeviceOwnershipRecord {
 
     @Id

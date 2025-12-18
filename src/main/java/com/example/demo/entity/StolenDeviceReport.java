@@ -11,7 +11,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "stolen_device_report")
 public class StolenDeviceReport {
 
     @Id
