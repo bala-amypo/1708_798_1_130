@@ -1,8 +1,6 @@
 package com.example.demo.entity;
-
 import java.time.LocalDateTime;
 import java.util.Set;
-
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
