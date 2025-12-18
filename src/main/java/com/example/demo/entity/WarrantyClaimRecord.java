@@ -37,7 +37,7 @@ public class WarrantyClaimRecord {
     private LocalDateTime submittedAt;
 
     @Column(nullable = false)
-    private String status; // PENDING / APPROVED / REJECTED / FLAGGED
+    private String status; 
 
     @PrePersist
     public void prePersist() {
@@ -46,8 +46,6 @@ public class WarrantyClaimRecord {
             this.status = "PENDING";
         }
     }
-
-    // Getters and Setters
 
     public Long getId() {
         return id;
