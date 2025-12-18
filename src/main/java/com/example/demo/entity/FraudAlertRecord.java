@@ -46,6 +46,8 @@ public class FraudAlertRecord {
         }
     }
 
+    // Getters & Setters
+
     public Long getId() {
         return id;
     }

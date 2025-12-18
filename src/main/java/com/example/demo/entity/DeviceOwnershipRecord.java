@@ -1,5 +1,7 @@
 package com.example.demo.entity;
+
 import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -31,14 +33,8 @@ public class DeviceOwnershipRecord {
     @Column(nullable = false)
     private Boolean active;
 
-    // Getters and Setters
-
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getSerialNumber() {

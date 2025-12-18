@@ -7,8 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -20,9 +18,8 @@ public class WarrantyClaimRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "serial_number", referencedColumnName = "serialNumber", nullable = false)
-    private DeviceOwnershipRecord device;
+    @Column(nullable = false)
+    private String serialNumber;
 
     @Column(nullable = false)
     private String claimantName;
@@ -37,7 +34,7 @@ public class WarrantyClaimRecord {
     private LocalDateTime submittedAt;
 
     @Column(nullable = false)
-    private String status; 
+    private String status; // PENDING / APPROVED / REJECTED / FLAGGED
 
     @PrePersist
     public void prePersist() {
@@ -47,20 +44,18 @@ public class WarrantyClaimRecord {
         }
     }
 
+    // Getters & Setters
+
     public Long getId() {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getSerialNumber() {
+        return serialNumber;
     }
 
-    public DeviceOwnershipRecord getDevice() {
-        return device;
-    }
-
-    public void setDevice(DeviceOwnershipRecord device) {
-        this.device = device;
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
     public String getClaimantName() {

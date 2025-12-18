@@ -16,7 +16,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "users") 
+@Table(name = "users")
 public class User {
 
     @Id
@@ -30,7 +30,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password;
+    private String password; // hashed in service layer
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
@@ -48,6 +48,7 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
+    // Getters & Setters
 
     public Long getId() {
         return id;
@@ -61,14 +62,10 @@ public class User {
         this.name = name;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getEmail() {
         return email;
     }
-    
+
     public void setEmail(String email) {
         this.email = email;
     }

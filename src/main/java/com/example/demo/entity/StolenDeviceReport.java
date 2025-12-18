@@ -7,8 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
@@ -20,9 +18,8 @@ public class StolenDeviceReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "serial_number", referencedColumnName = "serialNumber", nullable = false)
-    private DeviceOwnershipRecord device;
+    @Column(nullable = false)
+    private String serialNumber;
 
     @Column(nullable = false)
     private String reportedBy;
@@ -37,18 +34,18 @@ public class StolenDeviceReport {
         this.reportDate = LocalDateTime.now();
     }
 
-    // Getters and Setters
+    // Getters & Setters
 
     public Long getId() {
         return id;
     }
 
-    public DeviceOwnershipRecord getDevice() {
-        return device;
+    public String getSerialNumber() {
+        return serialNumber;
     }
 
-    public void setDevice(DeviceOwnershipRecord device) {
-        this.device = device;
+    public void setSerialNumber(String serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
     public String getReportedBy() {

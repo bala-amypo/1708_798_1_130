@@ -27,6 +27,8 @@ public class FraudRule {
     @Column(nullable = false)
     private Boolean active;
 
+    // Getters & Setters
+
     public Long getId() {
         return id;
     }
