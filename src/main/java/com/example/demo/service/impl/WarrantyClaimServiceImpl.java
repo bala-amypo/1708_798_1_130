@@ -20,7 +20,6 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
     private final FraudAlertRecordRepository fraudAlertRepository;
     private final FraudRuleRepository fraudRuleRepository;
 
-    // ⚠️ DO NOT CHANGE ORDER — REQUIRED BY TEST SUITE
     public WarrantyClaimServiceImpl(
             WarrantyClaimRecordRepository claimRepository,
             DeviceOwnershipRecordRepository deviceRepository,
@@ -38,21 +37,18 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
     @Override
     public WarrantyClaimRecord submitClaim(WarrantyClaimRecord claim) {
 
-        // 1️⃣ Check if device exists
         DeviceOwnershipRecord device = deviceRepository
                 .findBySerialNumber(claim.getSerialNumber())
                 .orElseThrow(() -> new NoSuchElementException("Device not found"));
 
         boolean flagged = false;
 
-        // 2️⃣ Check if device is stolen
         if (stolenRepository.existsBySerialNumber(claim.getSerialNumber())) {
             createFraudAlert(claim, "STOLEN_DEVICE", "HIGH",
                     "Claim submitted for stolen device");
             flagged = true;
         }
 
-        // 3️⃣ Check if warranty expired
         if (device.getWarrantyExpiration() != null &&
                 device.getWarrantyExpiration().isBefore(LocalDate.now())) {
             createFraudAlert(claim, "WARRANTY_EXPIRED", "MEDIUM",
@@ -60,7 +56,6 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
             flagged = true;
         }
 
-        // 4️⃣ Check duplicate claim (same serial + reason)
         if (claimRepository.existsBySerialNumberAndClaimReason(
                 claim.getSerialNumber(), claim.getClaimReason())) {
             createFraudAlert(claim, "DUPLICATE_CLAIM", "LOW",
@@ -68,12 +63,10 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
             flagged = true;
         }
 
-        // 5️⃣ Update status if flagged
         if (flagged) {
             claim.setStatus("FLAGGED");
         }
 
-        // 6️⃣ Save claim
         return claimRepository.save(claim);
     }
 
