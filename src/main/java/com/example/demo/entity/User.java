@@ -16,7 +16,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-public class User {
+ublic class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
