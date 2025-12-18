@@ -1,45 +1,30 @@
 package com.example.demo.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.time.LocalDateTime;
+
+@Entity
 public class WarrantyClaimRecord {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String deviceSerial;
+    private String deviceId;
     private String claimStatus;
+    private LocalDateTime claimDate;
 
-    public WarrantyClaimRecord() {
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public WarrantyClaimRecord(Long id, String deviceSerial, String claimStatus) {
-        this.id = id;
-        this.deviceSerial = deviceSerial;
-        this.claimStatus = claimStatus;
-    }
+    public String getDeviceId() { return deviceId; }
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getClaimStatus() { return claimStatus; }
+    public void setClaimStatus(String claimStatus) { this.claimStatus = claimStatus; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDeviceSerial() {
-        return deviceSerial;
-    }
-
-    public void setDeviceSerial(String deviceSerial) {
-        this.deviceSerial = deviceSerial;
-    }
-
-    public String getClaimStatus() {
-        return claimStatus;
-    }
-
-    public void setClaimStatus(String claimStatus) {
-        this.claimStatus = claimStatus;
-    }
-
-    public boolean isEmpty() {
-        return id == null && deviceSerial == null && claimStatus == null;
-    }
+    public LocalDateTime getClaimDate() { return claimDate; }
+    public void setClaimDate(LocalDateTime claimDate) { this.claimDate = claimDate; }
 }

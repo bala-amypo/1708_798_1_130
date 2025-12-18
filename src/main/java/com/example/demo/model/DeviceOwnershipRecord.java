@@ -1,45 +1,30 @@
 package com.example.demo.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.time.LocalDateTime;
+
+@Entity
 public class DeviceOwnershipRecord {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String deviceSerial;
-    private String ownerEmail;
+    private String deviceId;
+    private String owner;
+    private LocalDateTime ownershipDate;
 
-    public DeviceOwnershipRecord() {
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public DeviceOwnershipRecord(Long id, String deviceSerial, String ownerEmail) {
-        this.id = id;
-        this.deviceSerial = deviceSerial;
-        this.ownerEmail = ownerEmail;
-    }
+    public String getDeviceId() { return deviceId; }
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getOwner() { return owner; }
+    public void setOwner(String owner) { this.owner = owner; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getDeviceSerial() {
-        return deviceSerial;
-    }
-
-    public void setDeviceSerial(String deviceSerial) {
-        this.deviceSerial = deviceSerial;
-    }
-
-    public String getOwnerEmail() {
-        return ownerEmail;
-    }
-
-    public void setOwnerEmail(String ownerEmail) {
-        this.ownerEmail = ownerEmail;
-    }
-
-    public boolean isEmpty() {
-        return id == null && deviceSerial == null && ownerEmail == null;
-    }
+    public LocalDateTime getOwnershipDate() { return ownershipDate; }
+    public void setOwnershipDate(LocalDateTime ownershipDate) { this.ownershipDate = ownershipDate; }
 }

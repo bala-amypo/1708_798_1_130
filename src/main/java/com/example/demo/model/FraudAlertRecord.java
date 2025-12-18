@@ -1,41 +1,30 @@
 package com.example.demo.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import java.time.LocalDateTime;
+
+@Entity
 public class FraudAlertRecord {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String deviceId;
     private String alertMessage;
-    private String deviceSerial;
+    private LocalDateTime alertDate;
 
-    public FraudAlertRecord() {
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public FraudAlertRecord(Long id, String alertMessage, String deviceSerial) {
-        this.id = id;
-        this.alertMessage = alertMessage;
-        this.deviceSerial = deviceSerial;
-    }
+    public String getDeviceId() { return deviceId; }
+    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getAlertMessage() { return alertMessage; }
+    public void setAlertMessage(String alertMessage) { this.alertMessage = alertMessage; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getAlertMessage() {
-        return alertMessage;
-    }
-
-    public void setAlertMessage(String alertMessage) {
-        this.alertMessage = alertMessage;
-    }
-
-    public String getDeviceSerial() {
-        return deviceSerial;
-    }
-
-    public void setDeviceSerial(String deviceSerial) {
-        this.deviceSerial = deviceSerial;
-    }
+    public LocalDateTime getAlertDate() { return alertDate; }
+    public void setAlertDate(LocalDateTime alertDate) { this.alertDate = alertDate; }
 }
