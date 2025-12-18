@@ -11,6 +11,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "FraudAlertRecord")
 public class FraudAlertRecord {
 
     @Id
