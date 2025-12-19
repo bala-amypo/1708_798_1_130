@@ -27,4 +27,9 @@ public class FraudAlertRecord {
         alertDate = LocalDateTime.now();
         if (resolved == null) resolved = false;
     }
+
+    public Long getId() { return id; }
+    public Boolean getResolved() { return resolved; }
+
+    public void setResolved(Boolean resolved) { this.resolved = resolved; }
 }

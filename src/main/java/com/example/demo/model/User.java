@@ -41,5 +41,11 @@ public class User {
         }
     }
 
-    // getters and setters omitted for brevity (not required by tests)
+    public Long getId() { return id; }
+    public String getName() { return name; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public Set<String> getRoles() { return roles; }
+
+    public void setPassword(String password) { this.password = password; }
 }

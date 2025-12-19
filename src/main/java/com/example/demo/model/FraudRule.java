@@ -26,4 +26,14 @@ public class FraudRule {
         createdAt = LocalDateTime.now();
         if (active == null) active = true;
     }
+
+    public Long getId() { return id; }
+    public String getRuleCode() { return ruleCode; }
+    public String getRuleType() { return ruleType; }
+    public String getDescription() { return description; }
+    public Boolean getActive() { return active; }
+
+    public void setRuleType(String ruleType) { this.ruleType = ruleType; }
+    public void setDescription(String description) { this.description = description; }
+    public void setActive(Boolean active) { this.active = active; }
 }

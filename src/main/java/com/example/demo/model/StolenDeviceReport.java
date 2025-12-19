@@ -22,4 +22,7 @@ public class StolenDeviceReport {
     void onCreate() {
         reportDate = LocalDateTime.now();
     }
+
+    public Long getId() { return id; }
+    public String getSerialNumber() { return serialNumber; }
 }

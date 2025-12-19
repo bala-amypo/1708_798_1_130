@@ -28,4 +28,11 @@ public class WarrantyClaimRecord {
         createdAt = LocalDateTime.now();
         if (status == null) status = "PENDING";
     }
+
+    public Long getId() { return id; }
+    public String getSerialNumber() { return serialNumber; }
+    public String getClaimReason() { return claimReason; }
+    public String getStatus() { return status; }
+
+    public void setStatus(String status) { this.status = status; }
 }
