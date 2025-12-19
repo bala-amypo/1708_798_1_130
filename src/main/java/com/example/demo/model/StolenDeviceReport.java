@@ -11,29 +11,15 @@ public class StolenDeviceReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String serialNumber;
-
-    @Column(nullable = false)
     private String reportedBy;
-
+    private String details;
     private LocalDateTime reportDate;
 
-    private String details;
-
-    @ManyToOne
-    @JoinColumn(name = "device_id")
-    private DeviceOwnershipRecord deviceOwnershipRecord;
+    public StolenDeviceReport() {}
 
     @PrePersist
-    public void prePersist() {
+    void onCreate() {
         reportDate = LocalDateTime.now();
     }
-
-    public StolenDeviceReport() {}
-    public StolenDeviceReport(String serialNumber, String reportedBy) {
-        this.serialNumber = serialNumber;
-        this.reportedBy = reportedBy;
-    }
-
 }

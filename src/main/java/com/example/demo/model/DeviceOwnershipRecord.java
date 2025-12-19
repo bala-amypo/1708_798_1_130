@@ -3,7 +3,6 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "device_ownership_records")
@@ -13,37 +12,22 @@ public class DeviceOwnershipRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String serialNumber;
 
-    @Column(nullable = false)
     private String ownerName;
-
     private String ownerEmail;
     private LocalDate purchaseDate;
-
-    @Column(nullable = false)
     private LocalDate warrantyExpiration;
 
-    private boolean active = true;
+    private Boolean active = true;
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "deviceOwnershipRecord")
-    private List<WarrantyClaimRecord> warrantyClaims;
-
-    @OneToMany(mappedBy = "deviceOwnershipRecord")
-    private List<StolenDeviceReport> stolenReports;
+    public DeviceOwnershipRecord() {}
 
     @PrePersist
-    public void prePersist() {
+    void onCreate() {
         createdAt = LocalDateTime.now();
+        if (active == null) active = true;
     }
-
-    public DeviceOwnershipRecord() {}
-    public DeviceOwnershipRecord(String serialNumber, String ownerName, LocalDate warrantyExpiration) {
-        this.serialNumber = serialNumber;
-        this.ownerName = ownerName;
-        this.warrantyExpiration = warrantyExpiration;
-    }
-
 }

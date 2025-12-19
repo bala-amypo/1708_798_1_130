@@ -2,7 +2,6 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "warranty_claim_records")
@@ -12,39 +11,21 @@ public class WarrantyClaimRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String serialNumber;
-
-    @Column(nullable = false)
     private String claimantName;
-
     private String claimantEmail;
-
-    @Column(nullable = false)
     private String claimReason;
 
-    private LocalDateTime submittedAt;
     private String status = "PENDING";
+    private LocalDateTime submittedAt;
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "device_id")
-    private DeviceOwnershipRecord deviceOwnershipRecord;
-
-    @OneToMany(mappedBy = "warrantyClaimRecord")
-    private List<FraudAlertRecord> fraudAlerts;
+    public WarrantyClaimRecord() {}
 
     @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
+    void onCreate() {
         submittedAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
+        if (status == null) status = "PENDING";
     }
-
-    public WarrantyClaimRecord() {}
-    public WarrantyClaimRecord(String serialNumber, String claimantName, String claimReason) {
-        this.serialNumber = serialNumber;
-        this.claimantName = claimantName;
-        this.claimReason = claimReason;
-    }
-
 }
