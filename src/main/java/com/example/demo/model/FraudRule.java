@@ -11,25 +11,19 @@ public class FraudRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String ruleCode;
 
-    @Column(nullable = false)
     private String ruleType;
-
     private String description;
-    private boolean active = true;
+    private Boolean active = true;
     private LocalDateTime createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-    }
-
     public FraudRule() {}
-    public FraudRule(String ruleCode, String ruleType) {
-        this.ruleCode = ruleCode;
-        this.ruleType = ruleType;
-    }
 
+    @PrePersist
+    void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (active == null) active = true;
+    }
 }
