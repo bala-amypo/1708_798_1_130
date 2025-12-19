@@ -11,9 +11,7 @@ public class FraudRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String ruleCode;
-
     private String ruleType;
     private String description;
     private Boolean active = true;
@@ -24,16 +22,31 @@ public class FraudRule {
     @PrePersist
     void onCreate() {
         createdAt = LocalDateTime.now();
-        if (active == null) active = true;
     }
 
     public Long getId() { return id; }
-    public String getRuleCode() { return ruleCode; }
-    public String getRuleType() { return ruleType; }
-    public String getDescription() { return description; }
-    public Boolean getActive() { return active; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setRuleType(String ruleType) { this.ruleType = ruleType; }
-    public void setDescription(String description) { this.description = description; }
-    public void setActive(Boolean active) { this.active = active; }
+    public String getRuleCode() { return ruleCode; }
+    public void setRuleCode(String r) { this.ruleCode = r; }
+
+    public String getRuleType() { return ruleType; }
+    public void setRuleType(String r) { this.ruleType = r; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String d) { this.description = d; }
+
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean a) { this.active = a; }
+
+    public static Builder builder() { return new Builder(); }
+
+    public static class Builder {
+        private final FraudRule f = new FraudRule();
+        public Builder id(Long id) { f.id = id; return this; }
+        public Builder ruleCode(String r) { f.ruleCode = r; return this; }
+        public Builder ruleType(String r) { f.ruleType = r; return this; }
+        public Builder active(Boolean a) { f.active = a; return this; }
+        public FraudRule build() { return f; }
+    }
 }
