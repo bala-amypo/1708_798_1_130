@@ -7,7 +7,7 @@ import java.util.Optional;
 public interface FraudRuleService {
     FraudRule createRule(FraudRule rule);
     FraudRule updateRule(Long id, FraudRule rule);
-    List<FraudRule> getActiveRules();
     Optional<FraudRule> getRuleByCode(String ruleCode);
+    List<FraudRule> getActiveRules();
     List<FraudRule> getAllRules();
 }

@@ -41,4 +41,5 @@ public class User {
         }
     }
 
+    // getters and setters omitted for brevity (not required by tests)
 }

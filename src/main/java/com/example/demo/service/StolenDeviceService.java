@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface StolenDeviceService {
     StolenDeviceReport reportStolen(StolenDeviceReport report);
-    Optional<StolenDeviceReport> getReportById(Long id);
     List<StolenDeviceReport> getReportsBySerial(String serialNumber);
+    Optional<StolenDeviceReport> getReportById(Long id);
     List<StolenDeviceReport> getAllReports();
 }

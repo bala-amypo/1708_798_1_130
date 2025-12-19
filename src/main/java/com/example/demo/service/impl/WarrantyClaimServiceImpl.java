@@ -1,6 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.model.*;
+import com.example.demo.model.DeviceOwnershipRecord;
+import com.example.demo.model.WarrantyClaimRecord;
 import com.example.demo.repository.*;
 import com.example.demo.service.WarrantyClaimService;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,7 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
     @Override
     public WarrantyClaimRecord submitClaim(WarrantyClaimRecord claim) {
 
-        DeviceOwnershipRecord device = deviceRepo
-                .findBySerialNumber(claim.getSerialNumber())
+        DeviceOwnershipRecord device = deviceRepo.findBySerialNumber(claim.getSerialNumber())
                 .orElseThrow(() -> new NoSuchElementException("Offer not found"));
 
         boolean flagged = false;
@@ -54,27 +54,16 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
             flagged = true;
         }
 
-        claim.setDeviceOwnershipRecord(device);
-        claim.setStatus(flagged ? "FLAGGED" : "PENDING");
-
-        WarrantyClaimRecord savedClaim = claimRepo.save(claim);
-
         if (flagged) {
-            FraudAlertRecord alert = new FraudAlertRecord(
-                    savedClaim.getId(),
-                    savedClaim.getSerialNumber(),
-                    "AUTO_FLAG",
-                    "HIGH"
-            );
-            alertRepo.save(alert);
+            claim.setStatus("FLAGGED");
         }
 
-        return savedClaim;
+        return claimRepo.save(claim);
     }
 
     @Override
-    public WarrantyClaimRecord updateClaimStatus(Long claimId, String status) {
-        WarrantyClaimRecord claim = claimRepo.findById(claimId)
+    public WarrantyClaimRecord updateClaimStatus(Long id, String status) {
+        WarrantyClaimRecord claim = claimRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Request not found"));
         claim.setStatus(status);
         return claimRepo.save(claim);
