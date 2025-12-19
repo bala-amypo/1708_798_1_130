@@ -12,44 +12,42 @@ import java.util.Optional;
 @Service
 public class FraudRuleServiceImpl implements FraudRuleService {
 
-    private final FraudRuleRepository ruleRepo;
+    private final FraudRuleRepository repo;
 
-    public FraudRuleServiceImpl(FraudRuleRepository ruleRepo) {
-        this.ruleRepo = ruleRepo;
+    public FraudRuleServiceImpl(FraudRuleRepository repo) {
+        this.repo = repo;
     }
 
     @Override
     public FraudRule createRule(FraudRule rule) {
-        if (ruleRepo.findByRuleCode(rule.getRuleCode()).isPresent()) {
+        if (repo.findByRuleCode(rule.getRuleCode()).isPresent()) {
             throw new IllegalArgumentException("Rule already exists");
         }
-        return ruleRepo.save(rule);
+        return repo.save(rule);
     }
 
     @Override
-    public FraudRule updateRule(Long id, FraudRule updatedRule) {
-        FraudRule rule = ruleRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Rule not found"));
-
-        rule.setRuleType(updatedRule.getRuleType());
-        rule.setDescription(updatedRule.getDescription());
-        rule.setActive(updatedRule.isActive());
-
-        return ruleRepo.save(rule);
-    }
-
-    @Override
-    public List<FraudRule> getActiveRules() {
-        return ruleRepo.findByActiveTrue();
+    public FraudRule updateRule(Long id, FraudRule rule) {
+        FraudRule existing = repo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+        existing.setRuleType(rule.getRuleType());
+        existing.setDescription(rule.getDescription());
+        existing.setActive(rule.getActive());
+        return repo.save(existing);
     }
 
     @Override
     public Optional<FraudRule> getRuleByCode(String ruleCode) {
-        return ruleRepo.findByRuleCode(ruleCode);
+        return repo.findByRuleCode(ruleCode);
+    }
+
+    @Override
+    public List<FraudRule> getActiveRules() {
+        return repo.findByActiveTrue();
     }
 
     @Override
     public List<FraudRule> getAllRules() {
-        return ruleRepo.findAll();
+        return repo.findAll();
     }
 }

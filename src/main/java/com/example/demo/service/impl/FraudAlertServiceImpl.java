@@ -11,37 +11,37 @@ import java.util.NoSuchElementException;
 @Service
 public class FraudAlertServiceImpl implements FraudAlertService {
 
-    private final FraudAlertRecordRepository alertRepo;
+    private final FraudAlertRecordRepository repo;
 
-    public FraudAlertServiceImpl(FraudAlertRecordRepository alertRepo) {
-        this.alertRepo = alertRepo;
+    public FraudAlertServiceImpl(FraudAlertRecordRepository repo) {
+        this.repo = repo;
     }
 
     @Override
     public FraudAlertRecord createAlert(FraudAlertRecord alert) {
-        return alertRepo.save(alert);
+        return repo.save(alert);
     }
 
     @Override
     public FraudAlertRecord resolveAlert(Long id) {
-        FraudAlertRecord alert = alertRepo.findById(id)
+        FraudAlertRecord alert = repo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Request not found"));
         alert.setResolved(true);
-        return alertRepo.save(alert);
+        return repo.save(alert);
     }
 
     @Override
     public List<FraudAlertRecord> getAlertsBySerial(String serialNumber) {
-        return alertRepo.findBySerialNumber(serialNumber);
+        return repo.findBySerialNumber(serialNumber);
     }
 
     @Override
     public List<FraudAlertRecord> getAlertsByClaim(Long claimId) {
-        return alertRepo.findByClaimId(claimId);
+        return repo.findByClaimId(claimId);
     }
 
     @Override
     public List<FraudAlertRecord> getAllAlerts() {
-        return alertRepo.findAll();
+        return repo.findAll();
     }
 }
