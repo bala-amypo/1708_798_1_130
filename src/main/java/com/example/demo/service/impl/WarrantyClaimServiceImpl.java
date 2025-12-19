@@ -3,112 +3,95 @@ package com.example.demo.service.impl;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.service.WarrantyClaimService;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class WarrantyClaimServiceImpl implements WarrantyClaimService {
 
-    private final WarrantyClaimRecordRepository claimRepository;
-    private final DeviceOwnershipRecordRepository deviceRepository;
-    private final StolenDeviceReportRepository stolenRepository;
-    private final FraudAlertRecordRepository fraudAlertRepository;
-    private final FraudRuleRepository fraudRuleRepository;
+    private final WarrantyClaimRecordRepository claimRepo;
+    private final DeviceOwnershipRecordRepository deviceRepo;
+    private final StolenDeviceReportRepository stolenRepo;
+    private final FraudAlertRecordRepository alertRepo;
+    private final FraudRuleRepository ruleRepo;
 
     public WarrantyClaimServiceImpl(
-            WarrantyClaimRecordRepository claimRepository,
-            DeviceOwnershipRecordRepository deviceRepository,
-            StolenDeviceReportRepository stolenRepository,
-            FraudAlertRecordRepository fraudAlertRepository,
-            FraudRuleRepository fraudRuleRepository) {
-
-        this.claimRepository = claimRepository;
-        this.deviceRepository = deviceRepository;
-        this.stolenRepository = stolenRepository;
-        this.fraudAlertRepository = fraudAlertRepository;
-        this.fraudRuleRepository = fraudRuleRepository;
+            WarrantyClaimRecordRepository claimRepo,
+            DeviceOwnershipRecordRepository deviceRepo,
+            StolenDeviceReportRepository stolenRepo,
+            FraudAlertRecordRepository alertRepo,
+            FraudRuleRepository ruleRepo) {
+        this.claimRepo = claimRepo;
+        this.deviceRepo = deviceRepo;
+        this.stolenRepo = stolenRepo;
+        this.alertRepo = alertRepo;
+        this.ruleRepo = ruleRepo;
     }
 
     @Override
     public WarrantyClaimRecord submitClaim(WarrantyClaimRecord claim) {
 
-        DeviceOwnershipRecord device = deviceRepository
+        DeviceOwnershipRecord device = deviceRepo
                 .findBySerialNumber(claim.getSerialNumber())
-                .orElseThrow(() -> new NoSuchElementException("Device not found"));
+                .orElseThrow(() -> new NoSuchElementException("Offer not found"));
 
         boolean flagged = false;
 
-        if (stolenRepository.existsBySerialNumber(claim.getSerialNumber())) {
-            createFraudAlert(claim, "STOLEN_DEVICE", "HIGH",
-                    "Claim submitted for stolen device");
+        if (stolenRepo.existsBySerialNumber(claim.getSerialNumber())) {
             flagged = true;
         }
 
-        if (device.getWarrantyExpiration() != null &&
-                device.getWarrantyExpiration().isBefore(LocalDate.now())) {
-            createFraudAlert(claim, "WARRANTY_EXPIRED", "MEDIUM",
-                    "Warranty expired for device");
+        if (device.getWarrantyExpiration().isBefore(LocalDate.now())) {
             flagged = true;
         }
 
-        if (claimRepository.existsBySerialNumberAndClaimReason(
+        if (claimRepo.existsBySerialNumberAndClaimReason(
                 claim.getSerialNumber(), claim.getClaimReason())) {
-            createFraudAlert(claim, "DUPLICATE_CLAIM", "LOW",
-                    "Duplicate claim for same device and reason");
             flagged = true;
         }
+
+        claim.setDeviceOwnershipRecord(device);
+        claim.setStatus(flagged ? "FLAGGED" : "PENDING");
+
+        WarrantyClaimRecord savedClaim = claimRepo.save(claim);
 
         if (flagged) {
-            claim.setStatus("FLAGGED");
+            FraudAlertRecord alert = new FraudAlertRecord(
+                    savedClaim.getId(),
+                    savedClaim.getSerialNumber(),
+                    "AUTO_FLAG",
+                    "HIGH"
+            );
+            alertRepo.save(alert);
         }
 
-        return claimRepository.save(claim);
-    }
-
-    private void createFraudAlert(
-            WarrantyClaimRecord claim,
-            String alertType,
-            String severity,
-            String message) {
-
-        FraudAlertRecord alert = new FraudAlertRecord();
-        alert.setClaimId(claim.getId());
-        alert.setSerialNumber(claim.getSerialNumber());
-        alert.setAlertType(alertType);
-        alert.setSeverity(severity);
-        alert.setMessage(message);
-        alert.setAlertDate(LocalDateTime.now());
-        alert.setResolved(false);
-
-        fraudAlertRepository.save(alert);
+        return savedClaim;
     }
 
     @Override
     public WarrantyClaimRecord updateClaimStatus(Long claimId, String status) {
-        WarrantyClaimRecord claim = claimRepository.findById(claimId)
-                .orElseThrow(() -> new NoSuchElementException("Claim not found"));
+        WarrantyClaimRecord claim = claimRepo.findById(claimId)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
         claim.setStatus(status);
-        return claimRepository.save(claim);
+        return claimRepo.save(claim);
     }
 
     @Override
-    public WarrantyClaimRecord getClaimById(Long id) {
-        return claimRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Claim not found"));
+    public Optional<WarrantyClaimRecord> getClaimById(Long id) {
+        return claimRepo.findById(id);
     }
 
     @Override
     public List<WarrantyClaimRecord> getClaimsBySerial(String serialNumber) {
-        return claimRepository.findBySerialNumber(serialNumber);
+        return claimRepo.findBySerialNumber(serialNumber);
     }
 
     @Override
     public List<WarrantyClaimRecord> getAllClaims() {
-        return claimRepository.findAll();
+        return claimRepo.findAll();
     }
 }
