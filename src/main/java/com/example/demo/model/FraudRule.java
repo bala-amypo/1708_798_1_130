@@ -1,25 +1,35 @@
 package com.example.demo.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "fraud_rules")
 public class FraudRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String ruleName;
+
+    @Column(nullable = false, unique = true)
+    private String ruleCode;
+
+    @Column(nullable = false)
+    private String ruleType;
+
     private String description;
+    private boolean active = true;
+    private LocalDateTime createdAt;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
 
-    public String getRuleName() { return ruleName; }
-    public void setRuleName(String ruleName) { this.ruleName = ruleName; }
+    public FraudRule() {}
+    public FraudRule(String ruleCode, String ruleType) {
+        this.ruleCode = ruleCode;
+        this.ruleType = ruleType;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
 }
