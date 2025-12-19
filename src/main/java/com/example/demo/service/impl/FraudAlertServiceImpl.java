@@ -3,43 +3,45 @@ package com.example.demo.service.impl;
 import com.example.demo.model.FraudAlertRecord;
 import com.example.demo.repository.FraudAlertRecordRepository;
 import com.example.demo.service.FraudAlertService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.springframework.stereotype.Service;
-
 @Service
 public class FraudAlertServiceImpl implements FraudAlertService {
 
-    private final FraudAlertRecordRepository repo;
+    private final FraudAlertRecordRepository alertRepo;
 
-    public FraudAlertServiceImpl(FraudAlertRecordRepository repo) {
-        this.repo = repo;
+    public FraudAlertServiceImpl(FraudAlertRecordRepository alertRepo) {
+        this.alertRepo = alertRepo;
     }
 
+    @Override
     public FraudAlertRecord createAlert(FraudAlertRecord alert) {
-        return repo.save(alert);
+        return alertRepo.save(alert);
     }
 
+    @Override
     public FraudAlertRecord resolveAlert(Long id) {
-        FraudAlertRecord a = repo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Alert not found"));
-        a.setResolved(true);
-        return repo.save(a);
+        FraudAlertRecord alert = alertRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+        alert.setResolved(true);
+        return alertRepo.save(alert);
     }
 
-    public List<FraudAlertRecord> getAlertsBySerial(String serial) {
-        return repo.findAll().stream()
-                .filter(a -> a.getSerialNumber().equals(serial))
-                .toList();
+    @Override
+    public List<FraudAlertRecord> getAlertsBySerial(String serialNumber) {
+        return alertRepo.findBySerialNumber(serialNumber);
     }
 
+    @Override
     public List<FraudAlertRecord> getAlertsByClaim(Long claimId) {
-        return repo.findByClaimId(claimId);
+        return alertRepo.findByClaimId(claimId);
     }
 
+    @Override
     public List<FraudAlertRecord> getAllAlerts() {
-        return repo.findAll();
+        return alertRepo.findAll();
     }
 }
