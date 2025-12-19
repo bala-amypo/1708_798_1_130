@@ -36,5 +36,4 @@ public class StolenDeviceReport {
         this.reportedBy = reportedBy;
     }
 
-    // Getters and Setters
 }
