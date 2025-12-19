@@ -15,6 +15,8 @@ public class FraudAlertRecord {
     private String serialNumber;
     private String alertType;
     private String severity;
+    private String message;
+
     private Boolean resolved = false;
     private LocalDateTime alertDate;
 
@@ -23,22 +25,11 @@ public class FraudAlertRecord {
     @PrePersist
     void onCreate() {
         alertDate = LocalDateTime.now();
+        if (resolved == null) resolved = false;
     }
 
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public Boolean getResolved() { return resolved; }
-    public void setResolved(Boolean r) { this.resolved = r; }
 
-    public static Builder builder() { return new Builder(); }
-
-    public static class Builder {
-        private final FraudAlertRecord f = new FraudAlertRecord();
-        public Builder id(Long id) { f.id = id; return this; }
-        public Builder claimId(Long c) { f.claimId = c; return this; }
-        public Builder serialNumber(String s) { f.serialNumber = s; return this; }
-        public Builder severity(String s) { f.severity = s; return this; }
-        public FraudAlertRecord build() { return f; }
-    }
+    public void setResolved(Boolean resolved) { this.resolved = resolved; }
 }
