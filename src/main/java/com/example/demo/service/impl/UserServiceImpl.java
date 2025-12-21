@@ -5,48 +5,61 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 import com.example.demo.service.UserService;
-import java.util.NoSuchElementException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository repo;
-    private final PasswordEncoder encoder;
-    private final JwtTokenProvider jwt;
+    private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public UserServiceImpl(UserRepository repo,
-                           PasswordEncoder encoder,
-                           JwtTokenProvider jwt) {
-        this.repo = repo;
-        this.encoder = encoder;
-        this.jwt = jwt;
+    public UserServiceImpl(
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider) {
+
+        this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public AuthResponse registerUser(RegisterRequest r) {
-        if (repo.findByEmail(r.getEmail()).isPresent())
-            throw new IllegalArgumentException("Duplicate email");
+    @Override
+    public AuthResponse registerUser(RegisterRequest req) {
+        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already exists");
+        }
 
-        User u = new User();
-        u.setName(r.getName());
-        u.setEmail(r.getEmail());
-        u.setPassword(encoder.encode(r.getPassword()));
-        u.setRoles(r.getRoles());
-        repo.save(u);
+        User user = new User();
+        user.setName(req.getName());
+        user.setEmail(req.getEmail());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setRoles(req.getRoles());
 
-        return new AuthResponse(jwt.createToken(
-                u.getId(), u.getEmail(), u.getRoles()));
+        userRepo.save(user);
+
+        String token = jwtTokenProvider.createToken(
+                user.getId(), user.getEmail(), user.getRoles());
+
+        return new AuthResponse(token);
     }
 
-    public AuthResponse loginUser(LoginRequest r) {
-        User u = repo.findByEmail(r.getEmail())
+    @Override
+    public AuthResponse loginUser(LoginRequest req) {
+        User user = userRepo.findByEmail(req.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        if (!encoder.matches(r.getPassword(), u.getPassword()))
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid credentials");
+        }
 
-        return new AuthResponse(jwt.createToken(
-                u.getId(), u.getEmail(), u.getRoles()));
+        String token = jwtTokenProvider.createToken(
+                user.getId(), user.getEmail(), user.getRoles());
+
+        return new AuthResponse(token);
     }
 }
