@@ -2,29 +2,30 @@ package com.example.demo.controller;
 
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> request) {
         if (userRepository.existsByEmail(request.get("email"))) {
-            return ResponseEntity.badRequest().body("Email already in use");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Email already in use");
+            return ResponseEntity.badRequest().body(error);
         }
         
         User user = new User();
@@ -32,16 +33,12 @@ public class AuthController {
         user.setEmail(request.get("email"));
         user.setPassword(passwordEncoder.encode(request.get("password")));
         
-        // Set roles if provided
-        if (request.containsKey("roles")) {
-            user.setRoles(Set.of("USER")); // Simplified
-        }
-        
         userRepository.save(user);
         
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User registered successfully");
         response.put("userId", user.getId());
+        response.put("email", user.getEmail());
         
         return ResponseEntity.ok(response);
     }
@@ -52,7 +49,9 @@ public class AuthController {
                 .orElse(null);
         
         if (user == null || !passwordEncoder.matches(request.get("password"), user.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid credentials");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid credentials");
+            return ResponseEntity.badRequest().body(error);
         }
         
         Map<String, Object> response = new HashMap<>();
