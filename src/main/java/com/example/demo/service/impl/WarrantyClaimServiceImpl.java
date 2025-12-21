@@ -1,16 +1,3 @@
-package com.example.demo.service.impl;
-
-import com.example.demo.model.DeviceOwnershipRecord;
-import com.example.demo.model.WarrantyClaimRecord;
-import com.example.demo.repository.*;
-import com.example.demo.service.WarrantyClaimService;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
 @Service
 public class WarrantyClaimServiceImpl implements WarrantyClaimService {
 
@@ -33,10 +20,10 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
         this.ruleRepo = ruleRepo;
     }
 
-    @Override
     public WarrantyClaimRecord submitClaim(WarrantyClaimRecord claim) {
 
-        DeviceOwnershipRecord device = deviceRepo.findBySerialNumber(claim.getSerialNumber())
+        DeviceOwnershipRecord device = deviceRepo
+                .findBySerialNumber(claim.getSerialNumber())
                 .orElseThrow(() -> new NoSuchElementException("Offer not found"));
 
         boolean flagged = false;
@@ -59,28 +46,5 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
         }
 
         return claimRepo.save(claim);
-    }
-
-    @Override
-    public WarrantyClaimRecord updateClaimStatus(Long id, String status) {
-        WarrantyClaimRecord claim = claimRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Request not found"));
-        claim.setStatus(status);
-        return claimRepo.save(claim);
-    }
-
-    @Override
-    public Optional<WarrantyClaimRecord> getClaimById(Long id) {
-        return claimRepo.findById(id);
-    }
-
-    @Override
-    public List<WarrantyClaimRecord> getClaimsBySerial(String serialNumber) {
-        return claimRepo.findBySerialNumber(serialNumber);
-    }
-
-    @Override
-    public List<WarrantyClaimRecord> getAllClaims() {
-        return claimRepo.findAll();
     }
 }
