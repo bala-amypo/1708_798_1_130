@@ -38,7 +38,6 @@ public class User {
         this.roles = roles;
     }
 
-    /* ================= JPA CALLBACK ================= */
 
     @PrePersist
     public void onCreate() {
@@ -48,7 +47,6 @@ public class User {
         }
     }
 
-    /* ================= GETTERS ================= */
 
     public Long getId() {
         return id;
@@ -70,7 +68,6 @@ public class User {
         return roles;
     }
 
-    /* ================= SETTERS (TEST REQUIRED) ================= */
 
     public void setId(Long id) {
         this.id = id;
