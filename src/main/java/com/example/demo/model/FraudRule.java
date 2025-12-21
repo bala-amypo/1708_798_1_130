@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "fraud_rules", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "ruleCode")
-})
+@Table(
+    name = "fraud_rules",
+    uniqueConstraints = @UniqueConstraint(columnNames = "ruleCode")
+)
 public class FraudRule {
 
     @Id
@@ -40,8 +41,28 @@ public class FraudRule {
         }
     }
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public String getRuleCode() { return ruleCode; }
-    public Boolean getActive() { return active; }
+    public Long getId() {
+        return id;
+    }
+
+    public String getRuleCode() {
+        return ruleCode;
+    }
+
+    public String getRuleType() {
+        return ruleType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 }
