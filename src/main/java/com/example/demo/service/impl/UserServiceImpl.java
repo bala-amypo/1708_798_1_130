@@ -15,16 +15,16 @@ import java.util.NoSuchElementException;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
-    private final PasswordEncoder passwordEncoder;
+    // private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
     public UserServiceImpl(
             UserRepository userRepo,
-            PasswordEncoder passwordEncoder,
+            // PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider) {
 
         this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
+        // this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setName(req.getName());
         user.setEmail(req.getEmail());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        // user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRoles(req.getRoles());
 
         userRepo.save(user);
@@ -53,9 +53,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepo.findByEmail(req.getEmail())
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
-        }
+        // if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+        //     throw new IllegalArgumentException("Invalid credentials");
+        // }
 
         String token = jwtTokenProvider.createToken(
                 user.getId(), user.getEmail(), user.getRoles());
