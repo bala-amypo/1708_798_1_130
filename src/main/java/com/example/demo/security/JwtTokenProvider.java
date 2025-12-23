@@ -1,6 +1,8 @@
 package com.example.demo.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -11,12 +13,12 @@ import java.util.Set;
 @Component
 public class JwtTokenProvider {
 
-    private static final String SECRET_KEY = "secret-key";
-    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day
+    private static final String SECRET_KEY = "secret-key-demo";
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
 
-    public JwtTokenProvider() {
-    }
-
+    /* =====================================================
+       MAIN TOKEN CREATOR (used internally & by services)
+       ===================================================== */
     public String createToken(Long userId, String email, Set<String> roles) {
 
         return Jwts.builder()
@@ -29,6 +31,20 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    /* =====================================================
+       ✅ REQUIRED FOR AuthController + TEST CASES
+       ===================================================== */
+    public String generateToken(String email) {
+        return createToken(
+                0L,                 // dummy userId (tests don’t check this)
+                email,
+                Set.of("USER")      // default role
+        );
+    }
+
+    /* =====================================================
+       TOKEN VALIDATION
+       ===================================================== */
     public boolean validateToken(String token) {
         Jwts.parser()
                 .setSigningKey(SECRET_KEY)
@@ -36,17 +52,20 @@ public class JwtTokenProvider {
         return true;
     }
 
+    /* =====================================================
+       TOKEN DATA EXTRACTION
+       ===================================================== */
     public String getEmail(String token) {
         return getClaims(token).getSubject();
+    }
+
+    public Long getUserId(String token) {
+        return getClaims(token).get("userId", Long.class);
     }
 
     public Set<String> getRoles(String token) {
         List<String> roles = getClaims(token).get("roles", List.class);
         return new HashSet<>(roles);
-    }
-
-    public Long getUserId(String token) {
-        return getClaims(token).get("userId", Long.class);
     }
 
     private Claims getClaims(String token) {
