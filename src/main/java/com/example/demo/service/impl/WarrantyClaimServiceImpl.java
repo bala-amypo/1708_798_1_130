@@ -3,11 +3,12 @@ package com.example.demo.service.impl;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.service.WarrantyClaimService;
-
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class WarrantyClaimServiceImpl implements WarrantyClaimService {
@@ -38,50 +39,46 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
         DeviceOwnershipRecord device = deviceRepo.findBySerialNumber(claim.getSerialNumber())
                 .orElseThrow(() -> new NoSuchElementException("Device not found"));
 
-        boolean suspicious = false;
+        boolean flagged = false;
 
-        if (!device.getActive()) suspicious = true;
-        if (device.getWarrantyExpiration().isBefore(LocalDate.now())) suspicious = true;
-        if (stolenRepo.existsBySerialNumber(claim.getSerialNumber())) suspicious = true;
-        if (claimRepo.existsBySerialNumberAndClaimReason(
-                claim.getSerialNumber(), claim.getClaimReason())) suspicious = true;
-
-        WarrantyClaimRecord savedClaim = claimRepo.save(claim);
-
-        if (suspicious) {
-            savedClaim.setStatus("FLAGGED");
-            claimRepo.save(savedClaim);
-
-            FraudAlertRecord alert = new FraudAlertRecord();
-            alert.setClaimId(savedClaim.getId());
-            alert.setSerialNumber(savedClaim.getSerialNumber());
-            alert.setAlertType("AUTO_RULE");
-            alert.setSeverity("HIGH");
-            alert.setMessage("Suspicious warranty claim detected");
-
-            alertRepo.save(alert);
+        if (stolenRepo.existsBySerialNumber(claim.getSerialNumber())) {
+            flagged = true;
         }
 
-        return savedClaim;
+        if (device.getWarrantyExpiration().isBefore(LocalDate.now())) {
+            flagged = true;
+        }
+
+        if (claimRepo.existsBySerialNumberAndClaimReason(
+                claim.getSerialNumber(), claim.getClaimReason())) {
+            flagged = true;
+        }
+
+        if (flagged) {
+            claim.setStatus("FLAGGED");
+        }
+
+        return claimRepo.save(claim);
     }
 
     @Override
-    public WarrantyClaimRecord updateClaimStatus(Long id, String status) {
-        WarrantyClaimRecord claim = claimRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Claim not found"));
+    public WarrantyClaimRecord updateClaimStatus(Long claimId, String status) {
+
+        WarrantyClaimRecord claim = claimRepo.findById(claimId)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+
         claim.setStatus(status);
         return claimRepo.save(claim);
     }
 
     @Override
-    public WarrantyClaimRecord getClaimById(Long id) {
-        return claimRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Claim not found"));
+    public Optional<WarrantyClaimRecord> getClaimById(Long id) {
+        return claimRepo.findById(id);
     }
 
     @Override
-    public List<WarrantyClaimRecord> getClaimsBySerial(String serial) {
-        return claimRepo.findBySerialNumber(serial);
+    public List<WarrantyClaimRecord> getClaimsBySerial(String serialNumber) {
+        return claimRepo.findBySerialNumber(serialNumber);
     }
 
     @Override
@@ -89,3 +86,4 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
         return claimRepo.findAll();
     }
 }
+    

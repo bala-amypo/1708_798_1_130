@@ -3,54 +3,60 @@ package com.example.demo.service.impl;
 import com.example.demo.model.FraudRule;
 import com.example.demo.repository.FraudRuleRepository;
 import com.example.demo.service.FraudRuleService;
-
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class FraudRuleServiceImpl implements FraudRuleService {
 
-    private final FraudRuleRepository repository;
+    private final FraudRuleRepository ruleRepo;
 
-    public FraudRuleServiceImpl(FraudRuleRepository repository) {
-        this.repository = repository;
+    public FraudRuleServiceImpl(FraudRuleRepository ruleRepo) {
+        this.ruleRepo = ruleRepo;
     }
 
     @Override
     public FraudRule createRule(FraudRule rule) {
-        repository.findByRuleCode(rule.getRuleCode())
-                .ifPresent(r -> {
-                    throw new IllegalArgumentException("Duplicate rule code");
-                });
-        return repository.save(rule);
+
+        if (ruleRepo.findByRuleCode(rule.getRuleCode()).isPresent()) {
+            throw new IllegalArgumentException("Rule already exists");
+        }
+        return ruleRepo.save(rule);
     }
 
     @Override
     public FraudRule updateRule(Long id, FraudRule updatedRule) {
-        FraudRule rule = repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Rule not found"));
 
-        rule.setDescription(updatedRule.getDescription());
+        FraudRule rule = ruleRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+
         rule.setRuleType(updatedRule.getRuleType());
+        rule.setDescription(updatedRule.getDescription());
         rule.setActive(updatedRule.getActive());
 
-        return repository.save(rule);
+        return ruleRepo.save(rule);
     }
 
     @Override
     public List<FraudRule> getActiveRules() {
-        return repository.findByActiveTrue();
+        return ruleRepo.findByActiveTrue();
     }
 
     @Override
-    public FraudRule getRuleByCode(String code) {
-        return repository.findByRuleCode(code)
-                .orElseThrow(() -> new NoSuchElementException("Rule not found"));
+    public Optional<FraudRule> getRuleByCode(String ruleCode) {
+        return ruleRepo.findByRuleCode(ruleCode);
+    }
+
+    @Override
+    public Optional<FraudRule> getRuleById(Long id) {
+        return ruleRepo.findById(id);
     }
 
     @Override
     public List<FraudRule> getAllRules() {
-        return repository.findAll();
+        return ruleRepo.findAll();
     }
 }
