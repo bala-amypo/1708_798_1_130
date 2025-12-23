@@ -1,60 +1,60 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.DeviceOwnershipRecord;
-import com.example.demo.service.DeviceOwnershipService;
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.RegisterRequest;
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.security.JwtTokenProvider;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/devices")
-public class DeviceOwnershipController {
+@RequestMapping("/auth")
+public class AuthController {
 
-    private final DeviceOwnershipService deviceService;
+    private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    // ✅ constructor injection
-    public DeviceOwnershipController(DeviceOwnershipService deviceService) {
-        this.deviceService = deviceService;
+    public AuthController(
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider
+    ) {
+        this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // ================================
-    // REGISTER DEVICE
-    // ================================
-    @PostMapping
-    public ResponseEntity<DeviceOwnershipRecord> register(
-            @RequestBody DeviceOwnershipRecord device) {
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
 
-        return ResponseEntity.ok(deviceService.register(device));
+        User user = new User();
+        user.setEmail(req.getEmail());
+        user.setName(req.getName());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setRoles(req.getRoles());
+
+        userRepo.save(user);
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    // ================================
-    // UPDATE STATUS
-    // ================================
-    @PutMapping("/{id}/status")
-    public ResponseEntity<DeviceOwnershipRecord> updateStatus(
-            @PathVariable Long id,
-            @RequestParam boolean active) {
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
 
-        return ResponseEntity.ok(deviceService.updateStatus(id, active));
-    }
+        User user = userRepo.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // ================================
-    // GET BY SERIAL (test8 safe)
-    // ================================
-    @GetMapping("/serial/{serialNumber}")
-    public ResponseEntity<DeviceOwnershipRecord> getBySerial(
-            @PathVariable String serialNumber) {
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
 
-        return ResponseEntity.ok(deviceService.getBySerial(serialNumber));
-    }
-
-    // ================================
-    // GET ALL
-    // ================================
-    @GetMapping
-    public ResponseEntity<List<DeviceOwnershipRecord>> getAll() {
-        return ResponseEntity.ok(deviceService.getAll());
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }
