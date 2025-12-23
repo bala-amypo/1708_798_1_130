@@ -2,27 +2,33 @@ package com.example.demo.dto;
 
 public class AuthResponse {
 
-    private String message;
+    private String status;
     private String token;
 
-    // ✅ REQUIRED NO-ARG CONSTRUCTOR (Spring + Jackson)
+    // ✅ REQUIRED: no-arg constructor (Spring / Jackson)
     public AuthResponse() {
     }
 
-    // ✅ REQUIRED BY UserServiceImpl & TEST CASES
-    public AuthResponse(String message, String token) {
-        this.message = message;
+    // ✅ REQUIRED: single-arg constructor (Controller usage)
+    public AuthResponse(String token) {
+        this.token = token;
+        this.status = "SUCCESS";
+    }
+
+    // ✅ REQUIRED: two-arg constructor (TestNG usage)
+    public AuthResponse(String status, String token) {
+        this.status = status;
         this.token = token;
     }
 
-    // ===== GETTERS & SETTERS =====
+    // ===== getters & setters =====
 
-    public String getMessage() {
-        return message;
+    public String getStatus() {
+        return status;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getToken() {
