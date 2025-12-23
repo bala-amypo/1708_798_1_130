@@ -3,27 +3,36 @@ package com.example.demo.security;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtTokenProvider {
 
-    private final String SECRET_KEY = "very_secret_key_123";
-    private final long EXPIRATION = 24 * 60 * 60 * 1000; // 1 day
+    private static final String SECRET_KEY = "secret-key";
+    private static final long EXPIRATION_TIME = 24 * 60 * 60 * 1000; // 1 day
+
+    public JwtTokenProvider() {
+    }
 
     public String createToken(Long userId, String email, Set<String> roles) {
+
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
     public boolean validateToken(String token) {
-        Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token);
+        Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token);
         return true;
     }
 
@@ -32,7 +41,8 @@ public class JwtTokenProvider {
     }
 
     public Set<String> getRoles(String token) {
-        return new HashSet<>(getClaims(token).get("roles", List.class));
+        List<String> roles = getClaims(token).get("roles", List.class);
+        return new HashSet<>(roles);
     }
 
     public Long getUserId(String token) {

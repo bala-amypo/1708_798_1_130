@@ -3,40 +3,53 @@ package com.example.demo.service.impl;
 import com.example.demo.model.FraudAlertRecord;
 import com.example.demo.repository.FraudAlertRecordRepository;
 import com.example.demo.service.FraudAlertService;
-
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class FraudAlertServiceImpl implements FraudAlertService {
 
-    private final FraudAlertRecordRepository repository;
+    private final FraudAlertRecordRepository alertRepo;
 
-    public FraudAlertServiceImpl(FraudAlertRecordRepository repository) {
-        this.repository = repository;
+    public FraudAlertServiceImpl(FraudAlertRecordRepository alertRepo) {
+        this.alertRepo = alertRepo;
     }
 
     @Override
     public FraudAlertRecord createAlert(FraudAlertRecord alert) {
-        return repository.save(alert);
+        return alertRepo.save(alert);
     }
 
     @Override
     public FraudAlertRecord resolveAlert(Long id) {
-        FraudAlertRecord alert = repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Alert not found"));
+
+        FraudAlertRecord alert = alertRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Request not found"));
+
         alert.setResolved(true);
-        return repository.save(alert);
+        return alertRepo.save(alert);
+    }
+
+    @Override
+    public List<FraudAlertRecord> getAlertsBySerial(String serialNumber) {
+        return alertRepo.findBySerialNumber(serialNumber);
     }
 
     @Override
     public List<FraudAlertRecord> getAlertsByClaim(Long claimId) {
-        return repository.findByClaimId(claimId);
+        return alertRepo.findByClaimId(claimId);
+    }
+
+    @Override
+    public Optional<FraudAlertRecord> getById(Long id) {
+        return alertRepo.findById(id);
     }
 
     @Override
     public List<FraudAlertRecord> getAllAlerts() {
-        return repository.findAll();
+        return alertRepo.findAll();
     }
 }
