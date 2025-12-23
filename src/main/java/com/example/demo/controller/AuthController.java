@@ -1,77 +1,60 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.*;
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.security.JwtTokenProvider;
+import com.example.demo.model.DeviceOwnershipRecord;
+import com.example.demo.service.DeviceOwnershipService;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/auth")
-public class AuthController {
+@RequestMapping("/devices")
+public class DeviceOwnershipController {
 
-    private final UserRepository userRepo;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwt;
+    private final DeviceOwnershipService deviceService;
 
-    // ✅ EXACT constructor required by TestNG
-    public AuthController(UserRepository userRepo,
-                          PasswordEncoder passwordEncoder,
-                          JwtTokenProvider jwt) {
-        this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
-        this.jwt = jwt;
+    // ✅ constructor injection
+    public DeviceOwnershipController(DeviceOwnershipService deviceService) {
+        this.deviceService = deviceService;
     }
 
-    // ===== REGISTER =====
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
+    // ================================
+    // REGISTER DEVICE
+    // ================================
+    @PostMapping
+    public ResponseEntity<DeviceOwnershipRecord> register(
+            @RequestBody DeviceOwnershipRecord device) {
 
-        // ✅ DUPLICATE EMAIL → 409
-        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
-            return ResponseEntity.status(409).build();
-        }
-
-        User user = new User();
-        user.setEmail(req.getEmail());
-        user.setName(req.getName());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
-        user.setRoles(req.getRoles());
-
-        userRepo.save(user);
-
-        String token = jwt.createToken(
-                user.getEmail(),
-                user.getRoles(),
-                user.getId()
-        );
-
-        return ResponseEntity.ok(new AuthResponse(token));
+        return ResponseEntity.ok(deviceService.register(device));
     }
 
-    // ===== LOGIN =====
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
+    // ================================
+    // UPDATE STATUS
+    // ================================
+    @PutMapping("/{id}/status")
+    public ResponseEntity<DeviceOwnershipRecord> updateStatus(
+            @PathVariable Long id,
+            @RequestParam boolean active) {
 
-        User user = userRepo.findByEmail(req.getEmail()).orElse(null);
+        return ResponseEntity.ok(deviceService.updateStatus(id, active));
+    }
 
-        if (user == null) {
-            return ResponseEntity.status(401).build();
-        }
+    // ================================
+    // GET BY SERIAL (test8 safe)
+    // ================================
+    @GetMapping("/serial/{serialNumber}")
+    public ResponseEntity<DeviceOwnershipRecord> getBySerial(
+            @PathVariable String serialNumber) {
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).build(); // ❌ NO EXCEPTION
-        }
+        return ResponseEntity.ok(deviceService.getBySerial(serialNumber));
+    }
 
-        String token = jwt.createToken(
-                user.getEmail(),
-                user.getRoles(),
-                user.getId()
-        );
-
-        return ResponseEntity.ok(new AuthResponse(token));
+    // ================================
+    // GET ALL
+    // ================================
+    @GetMapping
+    public ResponseEntity<List<DeviceOwnershipRecord>> getAll() {
+        return ResponseEntity.ok(deviceService.getAll());
     }
 }
