@@ -3,38 +3,44 @@ package com.example.demo.controller;
 import com.example.demo.model.StolenDeviceReport;
 import com.example.demo.service.StolenDeviceService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/stolen-devices")
-@Tag(name = "Stolen Devices")
+@Tag(name = "StolenDevice")
 public class StolenDeviceController {
 
-    private final StolenDeviceService service;
+    private final StolenDeviceService stolenService;
 
-    public StolenDeviceController(StolenDeviceService service) {
-        this.service = service;
+    public StolenDeviceController(StolenDeviceService stolenService) {
+        this.stolenService = stolenService;
     }
 
     @PostMapping
-    public StolenDeviceReport report(@RequestBody StolenDeviceReport report) {
-        return service.reportStolen(report);
-    }
-
-    @GetMapping("/{id}")
-    public StolenDeviceReport getById(@PathVariable Long id) {
-        return service.getReportById(id);
+    public ResponseEntity<StolenDeviceReport> reportStolen(
+            @RequestBody StolenDeviceReport report) {
+        return ResponseEntity.ok(stolenService.reportStolen(report));
     }
 
     @GetMapping("/serial/{serialNumber}")
-    public List<StolenDeviceReport> getBySerial(@PathVariable String serialNumber) {
-        return service.getReportsBySerial(serialNumber);
+    public ResponseEntity<List<StolenDeviceReport>> getBySerial(
+            @PathVariable String serialNumber) {
+        return ResponseEntity.ok(stolenService.getReportsBySerial(serialNumber));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StolenDeviceReport> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                stolenService.getReportById(id)
+                        .orElseThrow(() -> new java.util.NoSuchElementException("Request not found"))
+        );
     }
 
     @GetMapping
-    public List<StolenDeviceReport> getAll() {
-        return service.getAllReports();
+    public ResponseEntity<List<StolenDeviceReport>> getAll() {
+        return ResponseEntity.ok(stolenService.getAllReports());
     }
 }

@@ -3,45 +3,49 @@ package com.example.demo.controller;
 import com.example.demo.model.FraudRule;
 import com.example.demo.service.FraudRuleService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/fraud-rules")
-@Tag(name = "Fraud Rules")
+@Tag(name = "Rule")
 public class FraudRuleController {
 
-    private final FraudRuleService service;
+    private final FraudRuleService ruleService;
 
-    public FraudRuleController(FraudRuleService service) {
-        this.service = service;
+    public FraudRuleController(FraudRuleService ruleService) {
+        this.ruleService = ruleService;
     }
 
     @PostMapping
-    public FraudRule create(@RequestBody FraudRule rule) {
-        return service.createRule(rule);
+    public ResponseEntity<FraudRule> createRule(@RequestBody FraudRule rule) {
+        return ResponseEntity.ok(ruleService.createRule(rule));
     }
 
     @PutMapping("/{id}")
-    public FraudRule update(
+    public ResponseEntity<FraudRule> updateRule(
             @PathVariable Long id,
             @RequestBody FraudRule rule) {
-        return service.updateRule(id, rule);
+        return ResponseEntity.ok(ruleService.updateRule(id, rule));
     }
 
     @GetMapping("/active")
-    public List<FraudRule> getActive() {
-        return service.getActiveRules();
+    public ResponseEntity<List<FraudRule>> getActiveRules() {
+        return ResponseEntity.ok(ruleService.getActiveRules());
     }
 
-    @GetMapping("/code/{code}")
-    public FraudRule getByCode(@PathVariable String code) {
-        return service.getRuleByCode(code);
+    @GetMapping("/{id}")
+    public ResponseEntity<FraudRule> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ruleService.getRuleById(id)
+                        .orElseThrow(() -> new java.util.NoSuchElementException("Request not found"))
+        );
     }
 
     @GetMapping
-    public List<FraudRule> getAll() {
-        return service.getAllRules();
+    public ResponseEntity<List<FraudRule>> getAll() {
+        return ResponseEntity.ok(ruleService.getAllRules());
     }
 }
