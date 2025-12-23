@@ -1,30 +1,59 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.service.UserService;
+import com.example.demo.dto.*;
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.security.JwtTokenProvider;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final UserService userService;
+    private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    // ✅ REQUIRED constructor (Spring injects automatically)
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    // ✅ EXACT constructor expected by TestNG
+    public AuthController(
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider
+    ) {
+        this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody RegisterRequest request) {
-        return userService.register(request);
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+
+        User user = new User();
+        user.setEmail(req.getEmail());
+        user.setName(req.getName());
+        user.setRoles(req.getRoles());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
+
+        userRepo.save(user);
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request) {
-        return userService.login(request);
+    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+
+        User user = userRepo.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String token = jwtTokenProvider.generateToken(user.getEmail());
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }
