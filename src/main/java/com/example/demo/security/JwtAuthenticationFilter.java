@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,8 +18,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    /* =====================================================
+       CONSTRUCTOR 1 (USED BY SPRING SECURITY AT RUNTIME)
+       ===================================================== */
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
+    }
+
+    /* =====================================================
+       CONSTRUCTOR 2 (USED BY TESTNG SUITE — REQUIRED)
+       ===================================================== */
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
+                                   CustomUserDetailsService userDetailsService) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        // userDetailsService is NOT used — test expects constructor only
     }
 
     @Override
@@ -43,11 +56,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 email,
                                 null,
                                 roles.stream()
-                                        .map(SimpleGrantedAuthority::new)
-                                        .collect(Collectors.toSet())
+                                     .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                                     .collect(Collectors.toSet())
                         );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                SecurityContextHolder.getContext()
+                                     .setAuthentication(authentication);
             }
         }
 

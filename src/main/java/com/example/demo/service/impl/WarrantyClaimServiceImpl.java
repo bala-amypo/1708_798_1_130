@@ -86,4 +86,3 @@ public class WarrantyClaimServiceImpl implements WarrantyClaimService {
         return claimRepo.findAll();
     }
 }
-    

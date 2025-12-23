@@ -20,7 +20,6 @@ public class FraudRuleServiceImpl implements FraudRuleService {
 
     @Override
     public FraudRule createRule(FraudRule rule) {
-
         if (ruleRepo.findByRuleCode(rule.getRuleCode()).isPresent()) {
             throw new IllegalArgumentException("Rule already exists");
         }
@@ -29,7 +28,6 @@ public class FraudRuleServiceImpl implements FraudRuleService {
 
     @Override
     public FraudRule updateRule(Long id, FraudRule updatedRule) {
-
         FraudRule rule = ruleRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Request not found"));
 

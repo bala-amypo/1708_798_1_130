@@ -8,10 +8,7 @@ import java.util.List;
 public interface WarrantyClaimRecordRepository
         extends JpaRepository<WarrantyClaimRecord, Long> {
 
-    boolean existsBySerialNumberAndClaimReason(
-            String serialNumber,
-            String claimReason
-    );
+    boolean existsBySerialNumberAndClaimReason(String serialNumber, String claimReason);
 
     List<WarrantyClaimRecord> findBySerialNumber(String serialNumber);
 }

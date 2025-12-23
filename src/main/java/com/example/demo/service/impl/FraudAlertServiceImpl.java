@@ -25,7 +25,6 @@ public class FraudAlertServiceImpl implements FraudAlertService {
 
     @Override
     public FraudAlertRecord resolveAlert(Long id) {
-
         FraudAlertRecord alert = alertRepo.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Request not found"));
 
