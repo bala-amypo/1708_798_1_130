@@ -1,76 +1,71 @@
 package com.example.demo.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.security.Key;
+import java.util.*;
 
 @Component
 public class JwtTokenProvider {
 
-    private static final String SECRET_KEY = "secret-key-demo";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
+    // ✅ MUST BE BASE64
+    private static final String SECRET =
+            Base64.getEncoder().encodeToString("test-secret-key-1234567890".getBytes());
 
-    /* =====================================================
-       MAIN TOKEN CREATOR (used internally & by services)
-       ===================================================== */
-    public String createToken(Long userId, String email, Set<String> roles) {
+    private static final long EXPIRY = 3600000;
+
+    private Key getKey() {
+        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET));
+    }
+
+    // ===== create =====
+    public String createToken(String email, Set<String> roles, Long userId) {
+
+        Claims claims = Jwts.claims().setSubject(email);
+        claims.put("roles", new ArrayList<>(roles));
+        claims.put("userId", userId);
 
         return Jwts.builder()
-                .setSubject(email)
-                .claim("userId", userId)
-                .claim("roles", roles)
+                .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRY))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    /* =====================================================
-       ✅ REQUIRED FOR AuthController + TEST CASES
-       ===================================================== */
-    public String generateToken(String email) {
-        return createToken(
-                0L,                 // dummy userId (tests don’t check this)
-                email,
-                Set.of("USER")      // default role
-        );
-    }
-
-    /* =====================================================
-       TOKEN VALIDATION
-       ===================================================== */
+    // ===== validate =====
     public boolean validateToken(String token) {
-        Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token);
-        return true;
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    /* =====================================================
-       TOKEN DATA EXTRACTION
-       ===================================================== */
     public String getEmail(String token) {
         return getClaims(token).getSubject();
     }
 
-    public Long getUserId(String token) {
-        return getClaims(token).get("userId", Long.class);
+    public Set<String> getRoles(String token) {
+        return new HashSet<>(
+                (List<String>) getClaims(token).get("roles")
+        );
     }
 
-    public Set<String> getRoles(String token) {
-        List<String> roles = getClaims(token).get("roles", List.class);
-        return new HashSet<>(roles);
+    public Long getUserId(String token) {
+        return ((Number) getClaims(token).get("userId")).longValue();
     }
 
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }

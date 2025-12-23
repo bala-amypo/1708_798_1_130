@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthRequest;
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
@@ -15,50 +13,65 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    // ✅ REQUIRED FIELDS
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwt;
 
-    // ✅ REQUIRED CONSTRUCTOR (Spring + TestNG)
-    public AuthController(
-            UserRepository userRepo,
-            PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider
-    ) {
+    // ✅ EXACT constructor required by TestNG
+    public AuthController(UserRepository userRepo,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider jwt) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwt = jwt;
     }
 
-    // ================= REGISTER =================
+    // ===== REGISTER =====
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
+
+        // ✅ DUPLICATE EMAIL → 409
+        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+            return ResponseEntity.status(409).build();
+        }
 
         User user = new User();
         user.setEmail(req.getEmail());
         user.setName(req.getName());
-        user.setRoles(req.getRoles());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setRoles(req.getRoles());
 
         userRepo.save(user);
 
-        String token = jwtTokenProvider.generateToken(user.getEmail());
+        String token = jwt.createToken(
+                user.getEmail(),
+                user.getRoles(),
+                user.getId()
+        );
+
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    // ================= LOGIN =================
+    // ===== LOGIN =====
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
 
-        User user = userRepo.findByEmail(req.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepo.findByEmail(req.getEmail()).orElse(null);
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+        if (user == null) {
+            return ResponseEntity.status(401).build();
         }
 
-        String token = jwtTokenProvider.generateToken(user.getEmail());
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(401).build(); // ❌ NO EXCEPTION
+        }
+
+        String token = jwt.createToken(
+                user.getEmail(),
+                user.getRoles(),
+                user.getId()
+        );
+
         return ResponseEntity.ok(new AuthResponse(token));
     }
 }
