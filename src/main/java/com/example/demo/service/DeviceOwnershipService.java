@@ -5,11 +5,13 @@ import java.util.List;
 
 public interface DeviceOwnershipService {
 
-    DeviceOwnershipRecord register(DeviceOwnershipRecord record);
+    DeviceOwnershipRecord registerDevice(DeviceOwnershipRecord device);
 
-    DeviceOwnershipRecord getBySerial(String serial);
+    DeviceOwnershipRecord getBySerial(String serialNumber);
 
-    List<DeviceOwnershipRecord> getAll();
+    DeviceOwnershipRecord getById(Long id);
 
-    DeviceOwnershipRecord updateStatus(Long id, boolean active);
+    List<DeviceOwnershipRecord> getAllDevices();
+
+    DeviceOwnershipRecord updateDeviceStatus(Long id, boolean active);
 }
