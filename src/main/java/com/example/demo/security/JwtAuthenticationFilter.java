@@ -17,37 +17,30 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomUserDetailsService userDetailsService;
 
-    /* =====================================================
-       CONSTRUCTOR 1 (USED BY SPRING SECURITY AT RUNTIME)
-       ===================================================== */
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    // ✅ REQUIRED BY TEST CASE
+    public JwtAuthenticationFilter(
+            JwtTokenProvider jwtTokenProvider,
+            CustomUserDetailsService userDetailsService
+    ) {
         this.jwtTokenProvider = jwtTokenProvider;
-    }
-
-    /* =====================================================
-       CONSTRUCTOR 2 (USED BY TESTNG SUITE — REQUIRED)
-       ===================================================== */
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
-                                   CustomUserDetailsService userDetailsService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        // userDetailsService is NOT used — test expects constructor only
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
-
             String token = header.substring(7);
 
             if (jwtTokenProvider.validateToken(token)) {
-
                 String email = jwtTokenProvider.getEmail(token);
                 Set<String> roles = jwtTokenProvider.getRoles(token);
 
@@ -56,12 +49,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 email,
                                 null,
                                 roles.stream()
-                                     .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-                                     .collect(Collectors.toSet())
+                                        .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                                        .collect(Collectors.toSet())
                         );
 
-                SecurityContextHolder.getContext()
-                                     .setAuthentication(authentication);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
 

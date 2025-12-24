@@ -1,29 +1,70 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private String name;
     private String email;
     private String password;
-    private String name;
+    private Set<String> roles = new HashSet<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> roles;
+    // ✅ Required: no-args constructor
+    public User() {
+        this.roles = new HashSet<>();
+    }
 
-    // ===== REQUIRED BY JPA =====
-    public User() {}
+    // ---------- Builder ----------
+    public static Builder builder() {
+        return new Builder();
+    }
 
-    // ===== GETTERS & SETTERS =====
+    public static class Builder {
+        private final User u = new User();
+
+        public Builder id(Long id) {
+            u.setId(id);
+            return this;
+        }
+
+        public Builder name(String name) {
+            u.setName(name);
+            return this;
+        }
+
+        public Builder email(String email) {
+            u.setEmail(email);
+            return this;
+        }
+
+        public Builder password(String password) {
+            u.setPassword(password);
+            return this;
+        }
+
+        public Builder roles(Set<String> roles) {
+            if (roles != null) {
+                u.setRoles(roles);
+            }
+            return this;
+        }
+
+        public User build() {
+            if (u.roles == null) {
+                u.roles = new HashSet<>();
+            }
+            return u;
+        }
+    }
+
+    // ---------- Getters & Setters ----------
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
@@ -31,47 +72,12 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public Set<String> getRoles() { return roles; }
-    public void setRoles(Set<String> roles) { this.roles = roles; }
-
-
-    public static Builder builder() {
-        return new Builder();
+    public Set<String> getRoles() {
+        if (roles == null) roles = new HashSet<>();
+        return roles;
     }
 
-    public static class Builder {
-        private final User user = new User();
-
-        public Builder id(Long id) {
-            user.setId(id);
-            return this;
-        }
-
-        public Builder email(String email) {
-            user.setEmail(email);
-            return this;
-        }
-
-        public Builder password(String password) {
-            user.setPassword(password);
-            return this;
-        }
-
-        public Builder name(String name) {
-            user.setName(name);
-            return this;
-        }
-
-        public Builder roles(Set<String> roles) {
-            user.setRoles(roles);
-            return this;
-        }
-
-        public User build() {
-            return user;
-        }
+    public void setRoles(Set<String> roles) {
+        this.roles = (roles == null) ? new HashSet<>() : roles;
     }
 }

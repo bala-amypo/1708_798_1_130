@@ -1,66 +1,45 @@
 package com.example.demo.model;
 
-    import jakarta.persistence.*;
-    import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
-    @Entity
-    @Table(name = "warranty_claim_records")
-    public class WarrantyClaimRecord {
+public class WarrantyClaimRecord {
 
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long id;
+    private Long id;
+    private String serialNumber;
+    private String claimReason;
+    private String status = "PENDING";
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-        private String serialNumber;
-        private String claimantName;
-        private String claimantEmail;
-        private String claimReason;
-        private String status = "PENDING";
-        private LocalDateTime submittedAt;
+    public WarrantyClaimRecord() {}
 
-        @PrePersist
-        public void onCreate() {
-            submittedAt = LocalDateTime.now();
-        }
-
-        public WarrantyClaimRecord() {}
-
-        /* Getters & Setters */
-
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
-
-        public String getSerialNumber() { return serialNumber; }
-        public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
-
-        public String getClaimantName() { return claimantName; }
-        public void setClaimantName(String claimantName) { this.claimantName = claimantName; }
-
-        public String getClaimantEmail() { return claimantEmail; }
-        public void setClaimantEmail(String claimantEmail) { this.claimantEmail = claimantEmail; }
-
-        public String getClaimReason() { return claimReason; }
-        public void setClaimReason(String claimReason) { this.claimReason = claimReason; }
-
-        public String getStatus() { return status; }
-        public void setStatus(String status) { this.status = status; }
-
-        /* BUILDER */
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static class Builder {
-            private final WarrantyClaimRecord w = new WarrantyClaimRecord();
-
-            public Builder id(Long id) { w.setId(id); return this; }
-            public Builder serialNumber(String s) { w.setSerialNumber(s); return this; }
-            public Builder claimantName(String s) { w.setClaimantName(s); return this; }
-            public Builder claimantEmail(String s) { w.setClaimantEmail(s); return this; }
-            public Builder claimReason(String s) { w.setClaimReason(s); return this; }
-            public Builder status(String s) { w.setStatus(s); return this; }
-
-            public WarrantyClaimRecord build() { return w; }
-        }
+    // ---------- Builder ----------
+    public static Builder builder() {
+        return new Builder();
     }
+
+    public static class Builder {
+        private final WarrantyClaimRecord c = new WarrantyClaimRecord();
+
+        public Builder id(Long id) { c.setId(id); return this; }
+        public Builder serialNumber(String s) { c.setSerialNumber(s); return this; }
+        public Builder claimReason(String r) { c.setClaimReason(r); return this; }
+        public Builder status(String s) { c.setStatus(s); return this; }
+
+        public WarrantyClaimRecord build() { return c; }
+    }
+
+    // ---------- Getters & Setters ----------
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getSerialNumber() { return serialNumber; }
+    public void setSerialNumber(String serialNumber) { this.serialNumber = serialNumber; }
+
+    public String getClaimReason() { return claimReason; }
+    public void setClaimReason(String claimReason) { this.claimReason = claimReason; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+}
