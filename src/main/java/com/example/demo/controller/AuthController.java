@@ -35,7 +35,6 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
 
-        // ✅ duplicate email → 409
         if (userRepo.findByEmail(req.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -70,7 +69,6 @@ public class AuthController {
         User user = opt.get();
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            // ✅ test43 expects 401, NOT exception
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
