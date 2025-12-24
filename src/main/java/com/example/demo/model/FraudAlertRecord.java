@@ -29,9 +29,6 @@ public class FraudAlertRecord {
 
     private Boolean resolved = false;
 
-    // =======================
-    // CONSTRUCTORS
-    // =======================
 
     public FraudAlertRecord() {
     }
@@ -57,9 +54,6 @@ public class FraudAlertRecord {
         }
     }
 
-    // =======================
-    // BUILDER (TEST REQUIRED)
-    // =======================
 
     public static Builder builder() {
         return new Builder();
@@ -119,10 +113,6 @@ public class FraudAlertRecord {
             return new FraudAlertRecord(this);
         }
     }
-
-    // =======================
-    // GETTERS & SETTERS
-    // =======================
 
     public Long getId() {
         return id;

@@ -39,9 +39,6 @@ public class StolenDeviceReport {
         }
     }
 
-    // =======================
-    // BUILDER (TEST REQUIRED)
-    // =======================
 
     public static Builder builder() {
         return new Builder();
@@ -83,10 +80,6 @@ public class StolenDeviceReport {
             return new StolenDeviceReport(this);
         }
     }
-
-    // =======================
-    // GETTERS & SETTERS
-    // =======================
 
     public Long getId() {
         return id;

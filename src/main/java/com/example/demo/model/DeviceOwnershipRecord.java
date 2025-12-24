@@ -26,10 +26,8 @@ public class DeviceOwnershipRecord {
     @Column(nullable = false)
     private Boolean active = true;
 
-    // ✅ Required by JPA
     public DeviceOwnershipRecord() {}
 
-    // ---------- Builder ----------
     public static Builder builder() {
         return new Builder();
     }
@@ -47,7 +45,6 @@ public class DeviceOwnershipRecord {
         public DeviceOwnershipRecord build() { return d; }
     }
 
-    // ---------- Getters & Setters ----------
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

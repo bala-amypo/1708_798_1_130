@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")   // optional but recommended (user is a SQL keyword)
+@Table(name = "users")   
 public class User {
 
     @Id
@@ -28,10 +28,10 @@ public class User {
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 
-    // ✅ Required by JPA
+
     public User() {}
 
-    // ---------- Builder ----------
+ 
     public static Builder builder() {
         return new Builder();
     }
@@ -71,7 +71,6 @@ public class User {
         }
     }
 
-    // ---------- Getters & Setters ----------
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

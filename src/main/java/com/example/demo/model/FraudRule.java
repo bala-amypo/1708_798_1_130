@@ -23,9 +23,6 @@ public class FraudRule {
 
     private LocalDateTime createdAt;
 
-    // =======================
-    // CONSTRUCTORS
-    // =======================
 
     public FraudRule() {
     }
@@ -49,9 +46,6 @@ public class FraudRule {
         }
     }
 
-    // =======================
-    // BUILDER (TEST REQUIRED)
-    // =======================
 
     public static Builder builder() {
         return new Builder();
@@ -100,9 +94,6 @@ public class FraudRule {
         }
     }
 
-    // =======================
-    // GETTERS & SETTERS
-    // =======================
 
     public Long getId() {
         return id;
