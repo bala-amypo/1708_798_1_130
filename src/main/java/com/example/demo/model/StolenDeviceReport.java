@@ -21,10 +21,6 @@ public class StolenDeviceReport {
 
     private LocalDateTime reportDate;
 
-    // =======================
-    // CONSTRUCTORS
-    // =======================
-
     public StolenDeviceReport() {
     }
 
