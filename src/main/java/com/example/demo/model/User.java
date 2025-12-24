@@ -1,20 +1,35 @@
 package com.example.demo.model;
 
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Entity
+@Table(name = "users")   // optional but recommended (user is a SQL keyword)
 public class User {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "role")
     private Set<String> roles = new HashSet<>();
 
-    // ✅ Required: no-args constructor
-    public User() {
-        this.roles = new HashSet<>();
-    }
+    // ✅ Required by JPA
+    public User() {}
 
     // ---------- Builder ----------
     public static Builder builder() {
@@ -52,9 +67,6 @@ public class User {
         }
 
         public User build() {
-            if (u.roles == null) {
-                u.roles = new HashSet<>();
-            }
             return u;
         }
     }
@@ -72,11 +84,7 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public Set<String> getRoles() {
-        if (roles == null) roles = new HashSet<>();
-        return roles;
-    }
-
+    public Set<String> getRoles() { return roles; }
     public void setRoles(Set<String> roles) {
         this.roles = (roles == null) ? new HashSet<>() : roles;
     }
