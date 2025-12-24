@@ -56,16 +56,11 @@ public class JwtTokenProvider {
         }
     }
 
-    // =====================================================
-    // ✅ GET EMAIL (TEST CASE 39)
-    // =====================================================
     public String getEmail(String token) {
         return parseClaims(token).getSubject();
     }
 
-    // =====================================================
-    // ✅ GET ROLES (TEST CASE 40)
-    // =====================================================
+
     public Set<String> getRoles(String token) {
         Claims claims = parseClaims(token);
         Object roles = claims.get("roles");
@@ -79,17 +74,11 @@ public class JwtTokenProvider {
         return Set.of();
     }
 
-    // =====================================================
-    // ✅ GET USER ID (TEST CASE 41)
-    // =====================================================
     public Long getUserId(String token) {
         Object id = parseClaims(token).get("userId");
         return Long.valueOf(id.toString());
     }
 
-    // =====================================================
-    // 🔒 INTERNAL PARSER
-    // =====================================================
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
