@@ -2,7 +2,7 @@ package com.example.demo.dto;
 
 public class AuthResponse {
 
-    private String status;
+    private String message;
     private String token;
 
     public AuthResponse() {
@@ -10,21 +10,19 @@ public class AuthResponse {
 
     public AuthResponse(String token) {
         this.token = token;
-        this.status = "SUCCESS";
     }
 
-    public AuthResponse(String status, String token) {
-        this.status = status;
+    public AuthResponse(String message, String token) {
+        this.message = message;
         this.token = token;
     }
 
-
-    public String getStatus() {
-        return status;
+    public String getMessage() {
+        return message;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public String getToken() {
