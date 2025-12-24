@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
+    // ✅ REQUIRED FIELDS
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // ✅ REQUIRED CONSTRUCTOR (Spring + TestNG)
     public AuthController(
             UserRepository userRepo,
             PasswordEncoder passwordEncoder,
@@ -29,14 +31,15 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    // ================= REGISTER =================
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
 
         User user = new User();
         user.setEmail(req.getEmail());
         user.setName(req.getName());
-        user.setPassword(passwordEncoder.encode(req.getPassword()));
         user.setRoles(req.getRoles());
+        user.setPassword(passwordEncoder.encode(req.getPassword()));
 
         userRepo.save(user);
 
@@ -44,8 +47,9 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
+    // ================= LOGIN =================
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         User user = userRepo.findByEmail(req.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
