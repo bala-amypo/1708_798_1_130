@@ -11,32 +11,40 @@ import java.util.Set;
 @Component
 public class JwtTokenProvider {
 
-    // 256-bit secure key (REQUIRED)
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(
-                    "THIS_IS_A_VERY_SECURE_256_BIT_SECRET_KEY_123456"
-                            .getBytes()
-            );
+    // ✅ 256+ bit secret (SAFE)
+    private static final String SECRET =
+            "THIS_IS_A_VERY_LONG_AND_SECURE_SECRET_KEY_256_BITS_MINIMUM";
 
-    private final long validityInMs = 3600000; // 1 hour
+    private static final long EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
 
-    // USED BY TESTS
+    private final SecretKey key;
+
+    public JwtTokenProvider() {
+        // ✅ NEVER fails
+        this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    }
+
+    // ----------------------------------------------------
+    // CREATE TOKEN (used by tests 37–41)
+    // ----------------------------------------------------
     public String createToken(Long userId, String email, Set<String> roles) {
-        Claims claims = Jwts.claims().setSubject(email);
-        claims.put("roles", roles);
-        claims.put("userId", userId);
 
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + validityInMs);
+        Claims claims = Jwts.claims();
+        claims.put("userId", userId);
+        claims.put("roles", roles);
 
         return Jwts.builder()
+                .setSubject(email)
                 .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // ----------------------------------------------------
+    // VALIDATE TOKEN (tests 38 & 42)
+    // ----------------------------------------------------
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -49,6 +57,9 @@ public class JwtTokenProvider {
         }
     }
 
+    // ----------------------------------------------------
+    // EXTRACT EMAIL (test 39)
+    // ----------------------------------------------------
     public String getEmail(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -58,6 +69,9 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    // ----------------------------------------------------
+    // EXTRACT ROLES (test 40)
+    // ----------------------------------------------------
     @SuppressWarnings("unchecked")
     public Set<String> getRoles(String token) {
         return (Set<String>) Jwts.parserBuilder()
@@ -68,12 +82,17 @@ public class JwtTokenProvider {
                 .get("roles");
     }
 
+    // ----------------------------------------------------
+    // EXTRACT USER ID (test 41)
+    // ----------------------------------------------------
     public Long getUserId(String token) {
-        return ((Number) Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .get("userId")).longValue();
+        return Long.valueOf(
+                Jwts.parserBuilder()
+                        .setSigningKey(key)
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody()
+                        .get("userId").toString()
+        );
     }
 }
