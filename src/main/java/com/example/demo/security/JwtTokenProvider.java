@@ -11,22 +11,17 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    // ✅ Strong 256-bit secret (MANDATORY for HS256)
     private static final String SECRET =
             "THIS_IS_A_VERY_LONG_AND_SECURE_SECRET_KEY_256_BITS_MINIMUM";
 
-    private static final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+    private static final long EXPIRATION = 1000 * 60 * 60;
 
     private final Key key;
 
-    // ✅ No-arg constructor required by Spring + TestNG
     public JwtTokenProvider() {
         this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // =====================================================
-    // ✅ CREATE TOKEN (used by tests 37–41)
-    // =====================================================
     public String createToken(Long userId, String email, Set<String> roles) {
 
         Claims claims = Jwts.claims().setSubject(email);
@@ -44,9 +39,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // =====================================================
-    // ✅ VALIDATE TOKEN (test42)
-    // =====================================================
+
     public boolean validateToken(String token) {
         try {
             parseClaims(token);

@@ -45,8 +45,6 @@ package com.example.demo.model;
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
 
-        /* BUILDER */
-
         public static Builder builder() {
             return new Builder();
         }

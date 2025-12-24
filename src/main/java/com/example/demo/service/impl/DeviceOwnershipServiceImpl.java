@@ -30,7 +30,6 @@ public class DeviceOwnershipServiceImpl implements DeviceOwnershipService {
 
     @Override
     public Optional<DeviceOwnershipRecord> getBySerial(String serialNumber) {
-        // ✅ test8 expects Optional.empty(), NOT exception
         return deviceRepo.findBySerialNumber(serialNumber);
     }
 
