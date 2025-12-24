@@ -1,14 +1,14 @@
 package com.example.demo.service.impl;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
 import com.example.demo.model.StolenDeviceReport;
 import com.example.demo.repository.DeviceOwnershipRecordRepository;
 import com.example.demo.repository.StolenDeviceReportRepository;
 import com.example.demo.service.StolenDeviceService;
+
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class StolenDeviceServiceImpl implements StolenDeviceService {
@@ -34,17 +34,12 @@ public class StolenDeviceServiceImpl implements StolenDeviceService {
     }
 
     @Override
-    public List<StolenDeviceReport> getReportsBySerial(String serialNumber) {
-        return stolenRepo.findBySerialNumber(serialNumber);
-    }
-
-    @Override
-    public Optional<StolenDeviceReport> getReportById(Long id) {
-        return stolenRepo.findById(id);
-    }
-
-    @Override
     public List<StolenDeviceReport> getAllReports() {
         return stolenRepo.findAll();
+    }
+
+    @Override
+    public List<StolenDeviceReport> getReportsBySerial(String serialNumber) {
+        return stolenRepo.findBySerialNumber(serialNumber);
     }
 }

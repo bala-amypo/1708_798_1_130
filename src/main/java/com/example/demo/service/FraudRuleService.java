@@ -9,13 +9,7 @@ public interface FraudRuleService {
 
     FraudRule createRule(FraudRule rule);
 
-    FraudRule updateRule(Long id, FraudRule updatedRule);
-
     List<FraudRule> getActiveRules();
 
     Optional<FraudRule> getRuleByCode(String ruleCode);
-
-    Optional<FraudRule> getRuleById(Long id);
-
-    List<FraudRule> getAllRules();
 }

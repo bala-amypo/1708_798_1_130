@@ -3,6 +3,7 @@ package com.example.demo.service.impl;
 import com.example.demo.model.FraudRule;
 import com.example.demo.repository.FraudRuleRepository;
 import com.example.demo.service.FraudRuleService;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,21 +21,10 @@ public class FraudRuleServiceImpl implements FraudRuleService {
 
     @Override
     public FraudRule createRule(FraudRule rule) {
+
         if (ruleRepo.findByRuleCode(rule.getRuleCode()).isPresent()) {
             throw new IllegalArgumentException("Rule already exists");
         }
-        return ruleRepo.save(rule);
-    }
-
-    @Override
-    public FraudRule updateRule(Long id, FraudRule updatedRule) {
-        FraudRule rule = ruleRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Request not found"));
-
-        rule.setRuleType(updatedRule.getRuleType());
-        rule.setDescription(updatedRule.getDescription());
-        rule.setActive(updatedRule.getActive());
-
         return ruleRepo.save(rule);
     }
 
@@ -46,15 +36,5 @@ public class FraudRuleServiceImpl implements FraudRuleService {
     @Override
     public Optional<FraudRule> getRuleByCode(String ruleCode) {
         return ruleRepo.findByRuleCode(ruleCode);
-    }
-
-    @Override
-    public Optional<FraudRule> getRuleById(Long id) {
-        return ruleRepo.findById(id);
-    }
-
-    @Override
-    public List<FraudRule> getAllRules() {
-        return ruleRepo.findAll();
     }
 }
