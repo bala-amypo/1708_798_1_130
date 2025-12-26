@@ -38,12 +38,50 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);
         
+        // Define public endpoints (including Swagger)
+        String[] publicEndpoints = {
+            // Authentication endpoints
+            "/api/auth/**",
+            
+            // Swagger UI
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+            "/api-docs/**",
+            "/api-docs.yaml",
+            "/swagger-resources/**",
+            "/swagger-resources",
+            "/webjars/**",
+            "/configuration/ui",
+            "/configuration/security",
+            
+            // H2 Console (for development)
+            "/h2-console/**",
+            
+            // Actuator endpoints (optional)
+            "/actuator/**",
+            
+            // Error pages
+            "/error",
+            
+            // Root
+            "/",
+            
+            // Test endpoints (if any)
+            "/api/test/**",
+            "/api/hello/**"
+        };
+        
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers(publicEndpoints).permitAll()  // All public endpoints
+                .anyRequest().authenticated()  // Everything else requires authentication
+            )
+            .headers(headers -> headers
+                .frameOptions().disable()  // Allow H2 console frames
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         
