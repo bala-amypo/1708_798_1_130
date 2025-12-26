@@ -21,6 +21,8 @@ public class SwaggerConfig {
                 .servers(List.of(
                         new Server().url("https://9233.pro604cr.amypo.ai")
                 ))
+
+
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
