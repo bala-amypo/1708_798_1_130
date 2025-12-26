@@ -28,43 +28,34 @@ public class AuthController {
         try {
             log.info("Registration attempt for email: {}", request.getEmail());
             
-            // Validate request
-            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("{\"error\": \"Email is required\"}");
-            }
-            if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("{\"error\": \"Password is required\"}");
-            }
-            
             // Check if email already exists
             if (userRepository.existsByEmail(request.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("{\"error\": \"Email already exists\"}");
             }
             
-            // Create new user
+            // Create new user (using alternative model)
             User user = new User();
             user.setName(request.getName() != null ? request.getName() : "");
             user.setEmail(request.getEmail().trim().toLowerCase());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             
-            // Set roles (default to USER if none provided)
+            // Handle roles - store as comma-separated string
             if (request.getRoles() != null && !request.getRoles().isEmpty()) {
-                user.setRoles(request.getRoles());
+                user.setRoles(String.join(",", request.getRoles()));
             } else {
-                user.setRoles(java.util.Set.of("USER"));
+                user.setRoles("USER");
             }
             
             // Save user
-            log.info("Saving user: {}", user.getEmail());
             User savedUser = userRepository.save(user);
             log.info("User saved with ID: {}", savedUser.getId());
             
-            // Generate token
+            // Generate token (convert string roles back to set)
             String token = jwtTokenProvider.createToken(
                     savedUser.getId(),
                     savedUser.getEmail(),
-                    savedUser.getRoles()
+                    savedUser.getRolesList() // Use getRolesList() helper
             );
             
             // Return response
@@ -85,16 +76,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
-            log.info("Login attempt for email: {}", request.getEmail());
-            
-            // Validate request
-            if (request.getEmail() == null || request.getEmail().trim().isEmpty() ||
-                request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body("{\"error\": \"Email and password are required\"}");
-            }
-            
             // Find user by email
-            User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+            User user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
             // Check password
@@ -107,7 +90,7 @@ public class AuthController {
             String token = jwtTokenProvider.createToken(
                     user.getId(),
                     user.getEmail(),
-                    user.getRoles()
+                    user.getRolesList() // Use getRolesList() helper
             );
             
             // Return response
@@ -116,11 +99,9 @@ public class AuthController {
                     .email(user.getEmail())
                     .build();
             
-            log.info("Login successful for: {}", user.getEmail());
             return ResponseEntity.ok(response);
             
         } catch (RuntimeException e) {
-            log.warn("Login failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("{\"error\": \"Invalid credentials\"}");
         } catch (Exception e) {
