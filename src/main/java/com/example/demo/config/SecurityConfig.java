@@ -25,24 +25,26 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+            // 🔴 CRITICAL: Disable CSRF
             .csrf(csrf -> csrf.disable())
+
+            // 🔴 Stateless JWT
             .sessionManagement(sm ->
                 sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            .authorizeHttpRequests(auth -> auth
-                // ✅ ALLOW AUTH
-                .requestMatchers("/auth/**").permitAll()
 
-                // ✅ ALLOW SWAGGER
+            // 🔴 Allow auth + swagger
+            .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
+                    "/auth/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-ui.html"
                 ).permitAll()
-
-                // everything else secured
                 .anyRequest().authenticated()
             )
+
+            // 🔴 JWT filter AFTER permitting auth endpoints
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
