@@ -42,15 +42,18 @@ public class AuthController {
                 .email(req.getEmail())
                 .name(req.getName())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .roles(req.getRoles())
+                .roles(req.getRoles()) // Set<String>
                 .build();
 
         user = userRepo.save(user);
 
+        // 🔥 FIX: Convert Set → List
+        List<String> rolesList = List.copyOf(user.getRoles());
+
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRoles()
+                rolesList
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
@@ -70,10 +73,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
+        // 🔥 FIX: Convert Set → List
+        List<String> rolesList = List.copyOf(user.getRoles());
+
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRoles()
+                rolesList
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
