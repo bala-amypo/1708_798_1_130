@@ -14,15 +14,13 @@ public class JwtTokenProvider {
     private static final String SECRET =
             "mySuperSecretKeyThatIsAtLeast32CharactersLong123";
 
-    private static final long EXPIRATION_MS = 86400000; // 1 day
+    private static final long EXPIRATION_MS = 86400000;
 
     private SecretKey getKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    /* ======================
-       TOKEN CREATION
-       ====================== */
+    /* ================= TOKEN CREATION ================= */
 
     public String createToken(Long userId, String email, List<String> roles) {
 
@@ -38,18 +36,14 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    /* ======================
-       TEST-EXPECTED METHODS
-       ====================== */
+    /* ================= TEST-EXPECTED METHODS ================= */
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token, String email) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getKey())
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
+            Claims claims = getClaims(token);
+            return claims.getSubject().equals(email)
+                    && claims.getExpiration().after(new Date());
+        } catch (Exception e) {
             return false;
         }
     }
@@ -60,9 +54,7 @@ public class JwtTokenProvider {
 
     public Long getUserId(String token) {
         Object id = getClaims(token).get("userId");
-        return (id instanceof Integer)
-                ? ((Integer) id).longValue()
-                : (Long) id;
+        return (id instanceof Integer) ? ((Integer) id).longValue() : (Long) id;
     }
 
     @SuppressWarnings("unchecked")
