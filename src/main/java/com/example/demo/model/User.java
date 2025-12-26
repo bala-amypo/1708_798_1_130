@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")  // Changed from "users" to "user"
 @Data
 public class User {
     @Id
@@ -24,19 +24,7 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", 
                      joinColumns = @JoinColumn(name = "user_id"),
-                     foreignKey = @ForeignKey(name = "FK_user_roles_user"))
+                     foreignKey = @ForeignKey(name = "FK_user_roles"))
     @Column(name = "role")
     private Set<String> roles = new HashSet<>();
-    
-    // Add pre-persist to ensure roles are initialized
-    @PrePersist
-    @PreUpdate
-    private void prepareRoles() {
-        if (roles == null) {
-            roles = new HashSet<>();
-        }
-        if (roles.isEmpty()) {
-            roles.add("USER");
-        }
-    }
 }
