@@ -3,7 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.RegisterRequest;
-import com.example.demo.model.User;                  // ✅ FIXED
+import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 
@@ -61,7 +61,6 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         Optional<User> opt = userRepo.findByEmail(req.getEmail());
-
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
