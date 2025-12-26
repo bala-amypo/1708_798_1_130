@@ -3,33 +3,35 @@ package com.example.demo.security;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class JwtTokenProvider {
 
-    // ✅ MUST be ≥ 256 bits (fixes WeakKeyException)
+    // ✅ >= 256-bit key (fixes WeakKeyException)
     private static final String SECRET =
-            "this_is_a_very_secure_256_bit_secret_key_for_testing_and_runtime";
+            "THIS_IS_A_SECURE_256_BIT_SECRET_KEY_FOR_JWT_TESTS_123456";
 
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(SECRET.getBytes());
+    private SecretKey key;
 
-    private final long EXPIRATION = 60 * 60 * 1000; // 1 hour
+    @PostConstruct
+    public void init() {
+        key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    }
 
-    // ✔ REQUIRED BY TESTS (37–41)
     public String createToken(Long userId, String email, Set<String> roles) {
-
         return Jwts.builder()
                 .setSubject(email)
-                .claim("roles", roles)
                 .claim("userId", userId)
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + 60 * 60 * 1000)
+                )
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -41,7 +43,7 @@ public class JwtTokenProvider {
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (JwtException | IllegalArgumentException ex) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
@@ -51,7 +53,8 @@ public class JwtTokenProvider {
     }
 
     public Set<String> getRoles(String token) {
-        return getClaims(token).get("roles", Set.class);
+        Object roles = getClaims(token).get("roles");
+        return new HashSet<>((Collection<String>) roles);
     }
 
     public Long getUserId(String token) {
