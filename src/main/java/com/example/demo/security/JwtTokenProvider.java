@@ -20,6 +20,7 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
+
     public String createToken(Long userId, String email, Set<String> roles) {
 
         Claims claims = Jwts.claims();
@@ -36,7 +37,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-
+ 
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -49,10 +50,10 @@ public class JwtTokenProvider {
         }
     }
 
-
     public String getEmail(String token) {
         return getAllClaims(token).get("email", String.class);
     }
+
 
     @SuppressWarnings("unchecked")
     public Set<String> getRoles(String token) {
@@ -67,6 +68,7 @@ public class JwtTokenProvider {
         return Set.of();
     }
 
+
     public Long getUserId(String token) {
         Object id = getAllClaims(token).get("userId");
         if (id instanceof Number) {
@@ -74,7 +76,6 @@ public class JwtTokenProvider {
         }
         return null;
     }
-
 
     private Claims getAllClaims(String token) {
         return Jwts.parserBuilder()
