@@ -1,52 +1,36 @@
-package com.example.demo.controller;
-
-import com.example.demo.dto.AuthRequest;
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.model.User;   // ✅ CORRECT PACKAGE
-import com.example.demo.repository.UserRepository;
-import com.example.demo.security.JwtTokenProvider;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public AuthController(UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
-                          JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
+    public AuthController(
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider
+    ) {
+        this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // ================= REGISTER =================
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
         User user = User.builder()
-                .email(request.getEmail())
-                .name(request.getName())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roles(request.getRoles()) // List<String>
+                .email(req.getEmail())
+                .name(req.getName())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .roles(req.getRoles())
                 .build();
 
-        userRepository.save(user);
+        user = userRepo.save(user);
 
         String token = jwtTokenProvider.createToken(
                 user.getId(),
@@ -57,22 +41,18 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
-    // ================= LOGIN =================
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
-        Optional<User> optionalUser =
-                userRepository.findByEmail(request.getEmail());
+        Optional<User> opt = userRepo.findByEmail(req.getEmail());
 
-        if (optionalUser.isEmpty()) {
+        if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = optionalUser.get();
+        User user = opt.get();
 
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPassword())) {
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
