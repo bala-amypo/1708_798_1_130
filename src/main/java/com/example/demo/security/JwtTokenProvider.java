@@ -2,40 +2,48 @@ package com.example.demo.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-
-import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
 
-    // ✅ >= 256-bit key (fixes WeakKeyException)
+    // ✅ 256+ bit secret (REQUIRED)
     private static final String SECRET =
-            "THIS_IS_A_SECURE_256_BIT_SECRET_KEY_FOR_JWT_TESTS_123456";
+            "ThisIsA256BitSecretKeyForJwtTokenProviderUsedInUnitTests12345";
 
-    private SecretKey key;
+    private final SecretKey key;
 
-    @PostConstruct
-    public void init() {
-        key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    // ✅ NO-ARG constructor (REQUIRED by tests)
+    public JwtTokenProvider() {
+        this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
+    // =========================================================
+    //  TEST 37: create token
+    // =========================================================
     public String createToken(Long userId, String email, Set<String> roles) {
+
+        Claims claims = Jwts.claims();
+        claims.put("userId", userId);
+        claims.put("email", email);
+        claims.put("roles", roles);
+
         return Jwts.builder()
+                .setClaims(claims)
                 .setSubject(email)
-                .claim("userId", userId)
-                .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + 60 * 60 * 1000)
-                )
+                .setExpiration(new Date(System.currentTimeMillis() + 3600_000))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
+    // =========================================================
+    //  TEST 38: validate token
+    // =========================================================
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -48,20 +56,42 @@ public class JwtTokenProvider {
         }
     }
 
+    // =========================================================
+    //  TEST 39: get email
+    // =========================================================
     public String getEmail(String token) {
-        return getClaims(token).getSubject();
+        return getAllClaims(token).get("email", String.class);
     }
 
+    // =========================================================
+    //  TEST 40: get roles
+    // =========================================================
+    @SuppressWarnings("unchecked")
     public Set<String> getRoles(String token) {
-        Object roles = getClaims(token).get("roles");
-        return new HashSet<>((Collection<String>) roles);
+        Object raw = getAllClaims(token).get("roles");
+
+        if (raw instanceof Collection<?>) {
+            return ((Collection<?>) raw)
+                    .stream()
+                    .map(Object::toString)
+                    .collect(Collectors.toSet());
+        }
+        return Set.of();
     }
 
+    // =========================================================
+    //  TEST 41: get userId
+    // =========================================================
     public Long getUserId(String token) {
-        return getClaims(token).get("userId", Long.class);
+        Object id = getAllClaims(token).get("userId");
+        if (id instanceof Number) {
+            return ((Number) id).longValue();
+        }
+        return null;
     }
 
-    private Claims getClaims(String token) {
+
+    private Claims getAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
