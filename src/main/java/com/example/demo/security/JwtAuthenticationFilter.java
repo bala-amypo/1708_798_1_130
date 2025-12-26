@@ -5,34 +5,24 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private JwtTokenProvider jwtTokenProvider;
-    private CustomUserDetailsService userDetailsService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    // ✅ REQUIRED BY SPRING BOOT (RUNTIME)
-    @Autowired
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
-                                   CustomUserDetailsService userDetailsService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = userDetailsService;
-    }
-
-    // ✅ REQUIRED BY TEST CASE #45
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = null;
     }
 
     @Override
@@ -46,26 +36,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
 
             String token = header.substring(7);
+            String email = jwtTokenProvider.extractEmail(token);
 
-            if (jwtTokenProvider.validateToken(token)) {
+            if (email != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null &&
+                jwtTokenProvider.validateToken(token, email)) {
 
-                String email = jwtTokenProvider.getEmail(token);
-                Set<String> roles = jwtTokenProvider.getRoles(token);
+                List<SimpleGrantedAuthority> authorities =
+                        jwtTokenProvider.getRoles(token)
+                                .stream()
+                                .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                                .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                email,
-                                null,
-                                roles == null ? null :
-                                        roles.stream()
-                                             .map(r -> () -> "ROLE_" + r)
-                                             .toList()
-                        );
+                                email, null, authorities);
 
                 auth.setDetails(
                         new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
+                                .buildDetails(request));
 
                 SecurityContextHolder.getContext()
                         .setAuthentication(auth);

@@ -14,13 +14,12 @@ public class JwtTokenProvider {
     private static final String SECRET =
             "mySuperSecretKeyThatIsAtLeast32CharactersLong123";
 
-    private static final long EXPIRATION = 86400000; // 1 day
+    private final SecretKey key =
+            Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
-    private SecretKey getKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
-    }
+    private final long expirationMs = 86400000; // 1 day
 
-    public String createToken(Long userId, String email, List<String> roles) {
+    public String createToken(Long userId, String email, Set<String> roles) {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
@@ -30,40 +29,35 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String extractEmail(String token) {
+        return parseClaims(token).getSubject();
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getRoles(String token) {
+        return new HashSet<>(
+                parseClaims(token).get("roles", List.class)
+        );
     }
 
     public boolean validateToken(String token, String email) {
         try {
-            return getEmailFromToken(token).equals(email)
-                    && !isTokenExpired(token);
+            Claims claims = parseClaims(token);
+            return claims.getSubject().equals(email)
+                    && claims.getExpiration().after(new Date());
         } catch (Exception e) {
             return false;
         }
     }
 
-    public String getEmailFromToken(String token) {
-        return parseClaims(token).getSubject();
-    }
-
-    public List<String> getRolesFromToken(String token) {
-        return parseClaims(token).get("roles", List.class);
-    }
-
-    public Long getUserIdFromToken(String token) {
-        Object id = parseClaims(token).get("userId");
-        return id instanceof Integer ? ((Integer) id).longValue() : (Long) id;
-    }
-
-    private boolean isTokenExpired(String token) {
-        return parseClaims(token).getExpiration().before(new Date());
-    }
-
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getKey())
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
