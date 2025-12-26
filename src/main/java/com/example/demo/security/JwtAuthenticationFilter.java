@@ -5,32 +5,34 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
-    private final CustomUserDetailsService userDetailsService;
+    private JwtTokenProvider jwtTokenProvider;
+    private CustomUserDetailsService userDetailsService;
 
-    // ✔ Used by Spring
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.userDetailsService = null;
-    }
-
-    // ✔ REQUIRED by TestNG
+    // ✅ REQUIRED BY SPRING BOOT (RUNTIME)
+    @Autowired
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
                                    CustomUserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = userDetailsService;
+    }
+
+    // ✅ REQUIRED BY TEST CASE #45
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.userDetailsService = null;
     }
 
     @Override
@@ -42,32 +44,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
 
         if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
 
-            try {
-                String email = jwtTokenProvider.getEmailFromToken(token);
+            if (jwtTokenProvider.validateToken(token)) {
 
-                if (email != null &&
-                        SecurityContextHolder.getContext().getAuthentication() == null &&
-                        userDetailsService != null) {
+                String email = jwtTokenProvider.getEmail(token);
+                Set<String> roles = jwtTokenProvider.getRoles(token);
 
-                    UserDetails userDetails =
-                            userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                email,
+                                null,
+                                roles == null ? null :
+                                        roles.stream()
+                                             .map(r -> () -> "ROLE_" + r)
+                                             .toList()
+                        );
 
-                    if (jwtTokenProvider.validateToken(token, email)) {
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(
+                        new WebAuthenticationDetailsSource()
+                                .buildDetails(request)
+                );
 
-                        auth.setDetails(
-                                new WebAuthenticationDetailsSource()
-                                        .buildDetails(request));
-
-                        SecurityContextHolder.getContext()
-                                .setAuthentication(auth);
-                    }
-                }
-            } catch (Exception ignored) {}
+                SecurityContextHolder.getContext()
+                        .setAuthentication(auth);
+            }
         }
 
         filterChain.doFilter(request, response);
