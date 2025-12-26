@@ -18,7 +18,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    // ✅ REQUIRED BY TEST CASES
     public JwtAuthenticationFilter(
             JwtTokenProvider jwtTokenProvider,
             CustomUserDetailsService userDetailsService
@@ -27,7 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    // ✅ REQUIRED BY SPRING SECURITY CONFIG
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = null;
@@ -72,7 +70,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    // ✅ IMPORTANT: allow auth & swagger endpoints
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
