@@ -28,7 +28,7 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
-    // ✅ FIX: define filter as a bean
+    // ✅ ONLY place where filter is created
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService);

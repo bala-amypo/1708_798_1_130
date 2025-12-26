@@ -2,25 +2,32 @@ package com.example.demo.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * IMPORTANT:
+ *  ❌ NO @Component
+ *  ❌ NO default constructor
+ *  ✅ Created ONLY via SecurityConfig @Bean
+ */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    // ✅ REQUIRED by tests (Test 45)
+    // ✅ REQUIRED by TestNG (test45)
     public JwtAuthenticationFilter(
             JwtTokenProvider jwtTokenProvider,
             CustomUserDetailsService userDetailsService
@@ -29,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    // ✅ Secondary constructor (some tests use only provider)
+    // ✅ Required for tests that only pass provider
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = null;
@@ -51,20 +58,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String email = jwtTokenProvider.getEmail(token);
                 Set<String> roles = jwtTokenProvider.getRoles(token);
 
-                UsernamePasswordAuthenticationToken auth =
+                // ✅ FIXED: Proper GrantedAuthority mapping
+                List<SimpleGrantedAuthority> authorities =
+                        roles.stream()
+                             .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                             .collect(Collectors.toList());
+
+                UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                roles.stream()
-                                        .map(r -> () -> "ROLE_" + r)
-                                        .toList()
+                                authorities
                         );
 
-                auth.setDetails(
+                authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request)
                 );
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authentication);
             }
         }
 
