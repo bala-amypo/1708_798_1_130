@@ -36,9 +36,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // =========================================================
-    //  TEST 38: validate token
-    // =========================================================
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -51,16 +49,11 @@ public class JwtTokenProvider {
         }
     }
 
-    // =========================================================
-    //  TEST 39: get email
-    // =========================================================
+
     public String getEmail(String token) {
         return getAllClaims(token).get("email", String.class);
     }
 
-    // =========================================================
-    //  TEST 40: get roles
-    // =========================================================
     @SuppressWarnings("unchecked")
     public Set<String> getRoles(String token) {
         Object raw = getAllClaims(token).get("roles");
@@ -74,9 +67,6 @@ public class JwtTokenProvider {
         return Set.of();
     }
 
-    // =========================================================
-    //  TEST 41: get userId
-    // =========================================================
     public Long getUserId(String token) {
         Object id = getAllClaims(token).get("userId");
         if (id instanceof Number) {
