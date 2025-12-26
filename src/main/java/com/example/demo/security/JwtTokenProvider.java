@@ -11,20 +11,15 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
 
-    // ✅ 256+ bit secret (REQUIRED)
     private static final String SECRET =
             "ThisIsA256BitSecretKeyForJwtTokenProviderUsedInUnitTests12345";
 
     private final SecretKey key;
 
-    // ✅ NO-ARG constructor (REQUIRED by tests)
     public JwtTokenProvider() {
         this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    // =========================================================
-    //  TEST 37: create token
-    // =========================================================
     public String createToken(Long userId, String email, Set<String> roles) {
 
         Claims claims = Jwts.claims();
