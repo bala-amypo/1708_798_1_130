@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @RestController
@@ -22,11 +23,9 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public AuthController(
-            UserRepository userRepo,
-            PasswordEncoder passwordEncoder,
-            JwtTokenProvider jwtTokenProvider
-    ) {
+    public AuthController(UserRepository userRepo,
+                          PasswordEncoder passwordEncoder,
+                          JwtTokenProvider jwtTokenProvider) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
@@ -43,15 +42,15 @@ public class AuthController {
                 .email(req.getEmail())
                 .name(req.getName())
                 .password(passwordEncoder.encode(req.getPassword()))
-                .roles(req.getRoles())
+                .roles(req.getRoles())   // Set<String>
                 .build();
 
-        user = userRepo.save(user);
+        userRepo.save(user);
 
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRoles()
+                new ArrayList<>(user.getRoles()) // ✅ FIX HERE
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
@@ -61,6 +60,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         Optional<User> opt = userRepo.findByEmail(req.getEmail());
+
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -74,7 +74,7 @@ public class AuthController {
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                user.getRoles()
+                new ArrayList<>(user.getRoles()) // ✅ FIX HERE
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
