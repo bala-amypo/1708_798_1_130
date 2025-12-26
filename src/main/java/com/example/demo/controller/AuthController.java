@@ -1,18 +1,14 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthRequest;
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.model.User;
+import com.example.demo.dto.*;
+import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -20,14 +16,14 @@ import java.util.Optional;
 public class AuthController {
 
     private final UserRepository userRepo;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder encoder;
     private final JwtTokenProvider jwtTokenProvider;
 
     public AuthController(UserRepository userRepo,
-                          PasswordEncoder passwordEncoder,
+                          PasswordEncoder encoder,
                           JwtTokenProvider jwtTokenProvider) {
         this.userRepo = userRepo;
-        this.passwordEncoder = passwordEncoder;
+        this.encoder = encoder;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -41,19 +37,16 @@ public class AuthController {
         User user = User.builder()
                 .email(req.getEmail())
                 .name(req.getName())
-                .password(passwordEncoder.encode(req.getPassword()))
-                .roles(req.getRoles()) // Set<String>
+                .password(encoder.encode(req.getPassword()))
+                .roles(req.getRoles())
                 .build();
 
-        user = userRepo.save(user);
-
-        // 🔥 FIX: Convert Set → List
-        List<String> rolesList = List.copyOf(user.getRoles());
+        userRepo.save(user);
 
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                rolesList
+                user.getRoles()
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
@@ -63,23 +56,18 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         Optional<User> opt = userRepo.findByEmail(req.getEmail());
-        if (opt.isEmpty()) {
+
+        if (opt.isEmpty() ||
+            !encoder.matches(req.getPassword(), opt.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         User user = opt.get();
 
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        // 🔥 FIX: Convert Set → List
-        List<String> rolesList = List.copyOf(user.getRoles());
-
         String token = jwtTokenProvider.createToken(
                 user.getId(),
                 user.getEmail(),
-                rolesList
+                user.getRoles()
         );
 
         return ResponseEntity.ok(new AuthResponse(token));
