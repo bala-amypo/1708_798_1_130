@@ -14,50 +14,65 @@ public class JwtTokenProvider {
     private static final String SECRET =
             "mySuperSecretKeyThatIsAtLeast32CharactersLong123";
 
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    private static final long EXPIRATION_MS = 86400000; // 1 day
 
-    private final long expirationMs = 86400000; // 1 day
+    private SecretKey getKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+    }
 
-    public String createToken(Long userId, String email, Set<String> roles) {
+    /* ======================
+       TOKEN CREATION
+       ====================== */
 
-        Map<String, Object> claims = new HashMap<>();
+    public String createToken(Long userId, String email, List<String> roles) {
+
+        Claims claims = Jwts.claims().setSubject(email);
         claims.put("userId", userId);
         claims.put("roles", roles);
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractEmail(String token) {
-        return parseClaims(token).getSubject();
-    }
+    /* ======================
+       TEST-EXPECTED METHODS
+       ====================== */
 
-    @SuppressWarnings("unchecked")
-    public Set<String> getRoles(String token) {
-        return new HashSet<>(
-                parseClaims(token).get("roles", List.class)
-        );
-    }
-
-    public boolean validateToken(String token, String email) {
+    public boolean validateToken(String token) {
         try {
-            Claims claims = parseClaims(token);
-            return claims.getSubject().equals(email)
-                    && claims.getExpiration().after(new Date());
-        } catch (Exception e) {
+            Jwts.parserBuilder()
+                    .setSigningKey(getKey())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
-    private Claims parseClaims(String token) {
+    public String getEmail(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public Long getUserId(String token) {
+        Object id = getClaims(token).get("userId");
+        return (id instanceof Integer)
+                ? ((Integer) id).longValue()
+                : (Long) id;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRoles(String token) {
+        return (List<String>) getClaims(token).get("roles");
+    }
+
+    private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(getKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
