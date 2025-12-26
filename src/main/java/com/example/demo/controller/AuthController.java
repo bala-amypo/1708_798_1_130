@@ -7,16 +7,16 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
     
     private final UserRepository userRepository;
@@ -26,29 +26,39 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
+            log.info("Registration attempt for email: {}", request.getEmail());
+            
+            // Validate request
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("{\"error\": \"Email is required\"}");
+            }
+            if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("{\"error\": \"Password is required\"}");
+            }
+            
             // Check if email already exists
             if (userRepository.existsByEmail(request.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("{\"message\": \"Email already exists\"}");
+                        .body("{\"error\": \"Email already exists\"}");
             }
             
             // Create new user
             User user = new User();
-            user.setName(request.getName());
-            user.setEmail(request.getEmail());
+            user.setName(request.getName() != null ? request.getName() : "");
+            user.setEmail(request.getEmail().trim().toLowerCase());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             
-            // Handle roles (ensure not null)
+            // Set roles (default to USER if none provided)
             if (request.getRoles() != null && !request.getRoles().isEmpty()) {
                 user.setRoles(request.getRoles());
             } else {
-                // Default role if none provided
-                user.setRoles(new HashSet<>());
-                user.getRoles().add("USER");
+                user.setRoles(java.util.Set.of("USER"));
             }
             
             // Save user
+            log.info("Saving user: {}", user.getEmail());
             User savedUser = userRepository.save(user);
+            log.info("User saved with ID: {}", savedUser.getId());
             
             // Generate token
             String token = jwtTokenProvider.createToken(
@@ -66,23 +76,31 @@ public class AuthController {
             return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            e.printStackTrace(); // For debugging
+            log.error("Registration error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"message\": \"Registration failed: " + e.getMessage() + "\"}");
+                    .body("{\"error\": \"Registration failed: " + e.getMessage() + "\"}");
         }
     }
     
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
+            log.info("Login attempt for email: {}", request.getEmail());
+            
+            // Validate request
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("{\"error\": \"Email and password are required\"}");
+            }
+            
             // Find user by email
-            User user = userRepository.findByEmail(request.getEmail())
+            User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
             // Check password
             if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("{\"message\": \"Invalid credentials\"}");
+                        .body("{\"error\": \"Invalid credentials\"}");
             }
             
             // Generate token
@@ -98,20 +116,22 @@ public class AuthController {
                     .email(user.getEmail())
                     .build();
             
+            log.info("Login successful for: {}", user.getEmail());
             return ResponseEntity.ok(response);
             
         } catch (RuntimeException e) {
+            log.warn("Login failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"message\": \"Invalid credentials\"}");
+                    .body("{\"error\": \"Invalid credentials\"}");
         } catch (Exception e) {
-            e.printStackTrace(); // For debugging
+            log.error("Login error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"message\": \"Login failed: " + e.getMessage() + "\"}");
+                    .body("{\"error\": \"Login failed: " + e.getMessage() + "\"}");
         }
     }
     
     @GetMapping("/test")
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Auth endpoint is working!");
+        return ResponseEntity.ok("{\"status\": \"OK\", \"message\": \"Auth endpoint is working!\"}");
     }
 }
