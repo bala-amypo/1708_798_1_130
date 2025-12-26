@@ -23,6 +23,7 @@ public class SwaggerConfig {
                 ))
 
 
+
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
