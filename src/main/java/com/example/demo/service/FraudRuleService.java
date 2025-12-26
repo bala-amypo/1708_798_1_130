@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FraudRuleService {
-
     FraudRule createRule(FraudRule rule);
-
+    List<FraudRule> getAllRules();
     List<FraudRule> getActiveRules();
-
     Optional<FraudRule> getRuleByCode(String ruleCode);
 }
