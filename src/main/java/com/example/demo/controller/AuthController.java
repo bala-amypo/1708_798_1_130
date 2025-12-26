@@ -61,7 +61,6 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         Optional<User> opt = userRepo.findByEmail(req.getEmail());
-
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
