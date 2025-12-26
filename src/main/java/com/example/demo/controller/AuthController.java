@@ -22,6 +22,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    // ✔ Constructor injection (required for tests)
     public AuthController(
             UserRepository userRepo,
             PasswordEncoder passwordEncoder,
@@ -32,8 +33,11 @@ public class AuthController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<AuthResponse> register(
+            @RequestBody RegisterRequest req
+    ) {
 
         if (userRepo.findByEmail(req.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -41,8 +45,8 @@ public class AuthController {
 
         User user = User.builder()
                 .email(req.getEmail())
-                .name(req.getName())
                 .password(passwordEncoder.encode(req.getPassword()))
+                .name(req.getName())
                 .roles(req.getRoles())
                 .build();
 
@@ -57,20 +61,26 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
+    // --------------------------------------------------
+    // LOGIN
+    // --------------------------------------------------
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+    public ResponseEntity<AuthResponse> login(
+            @RequestBody AuthRequest req
+    ) {
 
-        Optional<User> opt = userRepo.findByEmail(req.getEmail());
+        Optional<User> optUser = userRepo.findByEmail(req.getEmail());
 
-        if (opt.isEmpty()) {
+        if (optUser.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = opt.get();
+        User user = optUser.get();
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
 
         String token = jwtTokenProvider.createToken(
                 user.getId(),
