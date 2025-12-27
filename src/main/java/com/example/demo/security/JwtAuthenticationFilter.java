@@ -20,7 +20,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService userDetailsService;
 
-    // ✅ REQUIRED BY TEST CASE 45
     public JwtAuthenticationFilter(
             JwtTokenProvider jwtTokenProvider,
             CustomUserDetailsService userDetailsService
@@ -29,7 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
-    // ✅ REQUIRED FOR SPRING CONTEXT
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userDetailsService = null;
@@ -48,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             try {
-                // ✅ TC-45 expects THIS method signature
                 if (jwtTokenProvider.validateToken(token)) {
 
                     String email = jwtTokenProvider.getEmail(token);
@@ -76,7 +73,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (Exception e) {
-                // ❌ MUST IGNORE EXCEPTIONS (TEST EXPECTATION)
             }
         }
 
