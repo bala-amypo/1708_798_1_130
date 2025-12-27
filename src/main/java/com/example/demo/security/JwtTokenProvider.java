@@ -2,35 +2,43 @@ package com.example.demo.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import javax.crypto.SecretKey;
+import java.util.*;
 
 @Component
-@Slf4j
 public class JwtTokenProvider {
-    
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long validityInMilliseconds = 3600000; // 1 hour
-    
+
+    // ✅ 256-bit secret (REQUIRED for HS256)
+    private static final String SECRET =
+            "THIS_IS_A_VERY_SECURE_256_BIT_SECRET_KEY_FOR_JWT_TESTS";
+
+    private final SecretKey key =
+            Keys.hmacShaKeyFor(SECRET.getBytes());
+
+    /* ===============================
+       TOKEN CREATION
+       =============================== */
+
     public String createToken(Long userId, String email, Set<String> roles) {
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
-        
+
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
                 .claim("roles", roles)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(key)
+                .setIssuedAt(new Date())
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + 3600000) // 1 hour
+                )
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-    
+
+    /* ===============================
+       TOKEN VALIDATION (TEST EXPECTED)
+       =============================== */
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -39,48 +47,37 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.error("Invalid JWT token", e);
             return false;
         }
     }
-    
+
+    /* ===============================
+       CLAIM EXTRACTION (TEST EXPECTED)
+       =============================== */
+
     public String getEmail(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public Long getUserId(String token) {
+        return getClaims(token).get("userId", Long.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<String> getRoles(String token) {
+        Object roles = getClaims(token).get("roles");
+        return new HashSet<>((Collection<String>) roles);
+    }
+
+    /* ===============================
+       INTERNAL HELPER
+       =============================== */
+
+    private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-    }
-    
-    @SuppressWarnings("unchecked")
-    public Set<String> getRoles(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
                 .getBody();
-        
-        Object rolesObj = claims.get("roles");
-        if (rolesObj instanceof Set) {
-            return (Set<String>) rolesObj;
-        }
-        return new HashSet<>();
     }
-    
-    public Long getUserId(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        
-        Object userIdObj = claims.get("userId");
-        if (userIdObj instanceof Integer) {
-            return ((Integer) userIdObj).longValue();
-        } else if (userIdObj instanceof Long) {
-            return (Long) userIdObj;
-        }
-        return null;
-    }
-}
+}   

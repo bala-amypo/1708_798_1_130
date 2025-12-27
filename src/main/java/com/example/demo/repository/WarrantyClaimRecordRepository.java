@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface WarrantyClaimRecordRepository extends JpaRepository<WarrantyClaimRecord, Long> {
-    List<WarrantyClaimRecord> findBySerialNumber(String serialNumber);
+public interface WarrantyClaimRecordRepository
+        extends JpaRepository<WarrantyClaimRecord, Long> {
+
     boolean existsBySerialNumberAndClaimReason(String serialNumber, String claimReason);
+
+    List<WarrantyClaimRecord> findBySerialNumber(String serialNumber);
 }

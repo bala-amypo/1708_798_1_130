@@ -7,7 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface StolenDeviceReportRepository extends JpaRepository<StolenDeviceReport, Long> {
-    List<StolenDeviceReport> findBySerialNumber(String serialNumber);
+public interface StolenDeviceReportRepository
+        extends JpaRepository<StolenDeviceReport, Long> {
+
     boolean existsBySerialNumber(String serialNumber);
+
+    List<StolenDeviceReport> findBySerialNumber(String serialNumber);
 }
