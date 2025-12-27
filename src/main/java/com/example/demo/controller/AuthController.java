@@ -1,14 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthRequest;
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,8 +37,8 @@ public class AuthController {
         }
 
         User user = User.builder()
-                .email(req.getEmail())
                 .name(req.getName())
+                .email(req.getEmail())
                 .password(passwordEncoder.encode(req.getPassword()))
                 .roles(req.getRoles())
                 .build();
@@ -61,6 +58,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
 
         Optional<User> opt = userRepo.findByEmail(req.getEmail());
+
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
