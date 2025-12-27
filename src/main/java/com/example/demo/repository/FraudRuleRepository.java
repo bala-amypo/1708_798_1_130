@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FraudRuleRepository
-        extends JpaRepository<FraudRule, Long> {
-
-    Optional<FraudRule> findByRuleCode(String ruleCode);
-
+public interface FraudRuleRepository extends JpaRepository<FraudRule, Long> {
     List<FraudRule> findByActiveTrue();
+    Optional<FraudRule> findByRuleCode(String ruleCode);
 }

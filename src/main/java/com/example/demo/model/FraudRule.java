@@ -1,145 +1,88 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fraud_rules")
 public class FraudRule {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
     @Column(nullable = false, unique = true)
     private String ruleCode;
-
+    
     @Column(nullable = false)
     private String ruleType;
-
+    
     private String description;
-
+    
     private Boolean active = true;
-
+    
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-
-    public FraudRule() {
+    
+    public FraudRule() {}
+    
+    public FraudRule(String ruleCode, String ruleType, String description, Boolean active) {
+        this.ruleCode = ruleCode;
+        this.ruleType = ruleType;
+        this.description = description;
+        this.active = active != null ? active : true;
     }
-
-    private FraudRule(Builder builder) {
-        this.id = builder.id;
-        this.ruleCode = builder.ruleCode;
-        this.ruleType = builder.ruleType;
-        this.description = builder.description;
-        this.active = builder.active;
-        this.createdAt = builder.createdAt;
-    }
-
+    
     @PrePersist
-    public void onCreate() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-        if (this.active == null) {
-            this.active = true;
-        }
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
     }
-
-
-    public static Builder builder() {
-        return new Builder();
+    
+    public static FraudRuleBuilder builder() {
+        return new FraudRuleBuilder();
     }
-
-    public static class Builder {
+    
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    
+    public String getRuleCode() { return ruleCode; }
+    public void setRuleCode(String ruleCode) { this.ruleCode = ruleCode; }
+    
+    public String getRuleType() { return ruleType; }
+    public void setRuleType(String ruleType) { this.ruleType = ruleType; }
+    
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public static class FraudRuleBuilder {
         private Long id;
         private String ruleCode;
         private String ruleType;
         private String description;
-        private Boolean active;
-        private LocalDateTime createdAt;
-
-        public Builder id(Long id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder ruleCode(String ruleCode) {
-            this.ruleCode = ruleCode;
-            return this;
-        }
-
-        public Builder ruleType(String ruleType) {
-            this.ruleType = ruleType;
-            return this;
-        }
-
-        public Builder description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder active(Boolean active) {
-            this.active = active;
-            return this;
-        }
-
-        public Builder createdAt(LocalDateTime createdAt) {
-            this.createdAt = createdAt;
-            return this;
-        }
-
+        private Boolean active = true;
+        
+        public FraudRuleBuilder id(Long id) { this.id = id; return this; }
+        public FraudRuleBuilder ruleCode(String ruleCode) { this.ruleCode = ruleCode; return this; }
+        public FraudRuleBuilder ruleType(String ruleType) { this.ruleType = ruleType; return this; }
+        public FraudRuleBuilder description(String description) { this.description = description; return this; }
+        public FraudRuleBuilder active(Boolean active) { this.active = active; return this; }
+        
         public FraudRule build() {
-            return new FraudRule(this);
+            FraudRule rule = new FraudRule();
+            rule.id = this.id;
+            rule.ruleCode = this.ruleCode;
+            rule.ruleType = this.ruleType;
+            rule.description = this.description;
+            rule.active = this.active;
+            return rule;
         }
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getRuleCode() {
-        return ruleCode;
-    }
-
-    public void setRuleCode(String ruleCode) {
-        this.ruleCode = ruleCode;
-    }
-
-    public String getRuleType() {
-        return ruleType;
-    }
-
-    public void setRuleType(String ruleType) {
-        this.ruleType = ruleType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Boolean getActive() {
-        return active;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
