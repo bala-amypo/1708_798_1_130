@@ -1,15 +1,38 @@
 package com.example.demo.listener;
 
-public class TestResultListener {
-    // Simple placeholder class without TestNG dependencies
-    public void onTestSuccess(String testName) {
-        System.out.println("Test PASSED: " + testName);
+import org.testng.ITestContext;
+import org.testng.ITestListener;
+import org.testng.ITestResult;
+
+public class TestResultListener implements ITestListener {
+
+    @Override
+    public void onTestStart(ITestResult result) {
+        System.out.println("TEST STARTED: " + result.getName());
     }
 
-    public void onTestFailure(String testName, Throwable throwable) {
-        System.out.println("Test FAILED: " + testName);
-        if (throwable != null) {
-            throwable.printStackTrace();
-        }
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        System.out.println("TEST PASSED: " + result.getName());
+    }
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        System.out.println("TEST FAILED: " + result.getName());
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        System.out.println("TEST SKIPPED: " + result.getName());
+    }
+
+    @Override
+    public void onStart(ITestContext context) {
+        System.out.println("TEST SUITE STARTED");
+    }
+
+    @Override
+    public void onFinish(ITestContext context) {
+        System.out.println("TEST SUITE FINISHED");
     }
 }
