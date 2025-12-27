@@ -1,7 +1,7 @@
 package com.example.demo.config;
 
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -15,33 +15,26 @@ import java.util.List;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI openAPI() {
-
-        SecurityScheme bearerScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT");
-
-        Server production = new Server()
-                .url("https://9233.pro604cr.amypo.ai")
-                .description("Production");
-
-        Server local = new Server()
-                .url("http://localhost:9001")
-                .description("Local");
-
+    public OpenAPI customOpenAPI() {
         return new OpenAPI()
+                // API metadata
                 .info(new Info()
-                        .title("Warranty Claim & Fraud Detection API")
-                        .description("Spring Boot + JWT + TestNG")
+                        .title("Employee Shift Auto-Scheduler API")
                         .version("1.0")
-                )
-                .servers(List.of(production, local))
+                        .description("API for managing employee shifts and schedules"))
+
+                // Server configuration
+                .servers(List.of(
+                        new Server().url("https://9233.pro604cr.amypo.ai/")
+                ))
+
+                // Security configuration (JWT Bearer)
+                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
                 .components(new Components()
-                        .addSecuritySchemes("bearerAuth", bearerScheme)
-                )
-                .addSecurityItem(
-                        new SecurityRequirement().addList("bearerAuth")
-                );
+                        .addSecuritySchemes("Bearer Authentication",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
     }
 }
