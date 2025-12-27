@@ -1,40 +1,15 @@
-package com.example.demo.service.impl;
+package com.example.demo.service;
 
 import com.example.demo.model.FraudRule;
-import com.example.demo.repository.FraudRuleRepository;
-import com.example.demo.service.FraudRuleService;
-
-import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
-@Service
-public class FraudRuleServiceImpl implements FraudRuleService {
+public interface FraudRuleService {
 
-    private final FraudRuleRepository ruleRepo;
+    FraudRule createRule(FraudRule rule);
 
-    public FraudRuleServiceImpl(FraudRuleRepository ruleRepo) {
-        this.ruleRepo = ruleRepo;
-    }
+    List<FraudRule> getActiveRules();
 
-    @Override
-    public FraudRule createRule(FraudRule rule) {
-
-        if (ruleRepo.findByRuleCode(rule.getRuleCode()).isPresent()) {
-            throw new IllegalArgumentException("Rule already exists");
-        }
-        return ruleRepo.save(rule);
-    }
-
-    @Override
-    public List<FraudRule> getActiveRules() {
-        return ruleRepo.findByActiveTrue();
-    }
-
-    @Override
-    public Optional<FraudRule> getRuleByCode(String ruleCode) {
-        return ruleRepo.findByRuleCode(ruleCode);
-    }
+    Optional<FraudRule> getRuleByCode(String ruleCode);
 }
