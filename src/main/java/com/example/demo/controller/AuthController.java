@@ -6,88 +6,77 @@ import com.example.demo.dto.RegisterRequest;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtTokenProvider;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/auth")
-@RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    // ---------------- REGISTER ----------------
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-
-        // check if email already registered
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Email already exists");
-        }
-
-        // create and save user
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .roles(request.getRoles()) // e.g. ["ADMIN"]
-                .build();
-
-        User savedUser = userRepository.save(user); // <-- ID assigned here
-
-        // generate token using savedUser (not user)
-        String token = jwtTokenProvider.createToken(
-                savedUser.getId(),
-                savedUser.getEmail(),
-                savedUser.getRoles()
-        );
-
-        return ResponseEntity.ok(
-                AuthResponse.builder()
-                        .token(token)
-                        .email(savedUser.getEmail())
-                        .build()
-        );
+    public AuthController(
+            UserRepository userRepo,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider
+    ) {
+        this.userRepo = userRepo;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    // ---------------- LOGIN ----------------
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        try {
-            User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
 
-            // validate password
-            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid credentials");
-            }
-
-            // generate token
-            String token = jwtTokenProvider.createToken(
-                    user.getId(),
-                    user.getEmail(),
-                    user.getRoles()
-            );
-
-            return ResponseEntity.ok(
-                    AuthResponse.builder()
-                            .token(token)
-                            .email(user.getEmail())
-                            .build()
-            );
-
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid credentials");
+        if (userRepo.findByEmail(req.getEmail()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+
+        User user = User.builder()
+                .email(req.getEmail())
+                .name(req.getName())
+                .password(passwordEncoder.encode(req.getPassword()))
+                .roles(req.getRoles())
+                .build();
+
+        user = userRepo.save(user);
+
+        String token = jwtTokenProvider.createToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRoles()
+        );
+
+        return ResponseEntity.ok(new AuthResponse(token));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+
+        Optional<User> opt = userRepo.findByEmail(req.getEmail());
+        if (opt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = opt.get();
+
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String token = jwtTokenProvider.createToken(
+                user.getId(),
+                user.getEmail(),
+                user.getRoles()
+        );
+
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 }
