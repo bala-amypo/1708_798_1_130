@@ -5,21 +5,20 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
 public class JwtTokenProvider {
 
-    // ✅ 256-bit secret (REQUIRED for HS256)
     private static final String SECRET =
             "THIS_IS_A_VERY_SECURE_256_BIT_SECRET_KEY_FOR_JWT_TESTS";
 
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(SECRET.getBytes());
+    private static final long EXPIRATION_MS = 3600000;
 
-    /* ===============================
-       TOKEN CREATION
-       =============================== */
+    private final SecretKey key =
+            Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+
 
     public String createToken(Long userId, String email, Set<String> roles) {
 
@@ -28,16 +27,11 @@ public class JwtTokenProvider {
                 .claim("userId", userId)
                 .claim("roles", roles)
                 .setIssuedAt(new Date())
-                .setExpiration(
-                        new Date(System.currentTimeMillis() + 3600000) // 1 hour
-                )
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    /* ===============================
-       TOKEN VALIDATION (TEST EXPECTED)
-       =============================== */
 
     public boolean validateToken(String token) {
         try {
@@ -51,16 +45,16 @@ public class JwtTokenProvider {
         }
     }
 
-    /* ===============================
-       CLAIM EXTRACTION (TEST EXPECTED)
-       =============================== */
 
     public String getEmail(String token) {
         return getClaims(token).getSubject();
     }
 
     public Long getUserId(String token) {
-        return getClaims(token).get("userId", Long.class);
+        Object id = getClaims(token).get("userId");
+        return (id instanceof Integer)
+                ? ((Integer) id).longValue()
+                : (Long) id;
     }
 
     @SuppressWarnings("unchecked")
@@ -69,10 +63,6 @@ public class JwtTokenProvider {
         return new HashSet<>((Collection<String>) roles);
     }
 
-    /* ===============================
-       INTERNAL HELPER
-       =============================== */
-
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -80,4 +70,4 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-}   
+}
