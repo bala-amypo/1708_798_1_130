@@ -90,12 +90,6 @@
                 <version>7.8.0</version>
             </dependency>
 
-             <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
 
 <dependency>
     <groupId>org.mockito</groupId>
@@ -108,8 +102,8 @@
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
     <version>7.9.0</version>
-    <scope>test</scope>
 </dependency>
+
 
 
         </dependencies>
