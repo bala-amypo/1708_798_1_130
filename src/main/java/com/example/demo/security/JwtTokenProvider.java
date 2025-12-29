@@ -15,7 +15,7 @@ import java.util.Set;
 public class JwtTokenProvider {
     
     private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long validityInMilliseconds = 86400000; // 24 hours
+    private final long validityInMilliseconds = 86400000;
     
     public JwtTokenProvider() {
     }
