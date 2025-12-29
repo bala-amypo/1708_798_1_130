@@ -32,7 +32,6 @@ public class DeviceOwnershipController {
     
     @GetMapping("/{id}")
     public ResponseEntity<DeviceOwnershipRecord> getDeviceById(@PathVariable Long id) {
-        // Implementation would need to be added to service
         return ResponseEntity.notFound().build();
     }
     

@@ -31,7 +31,6 @@ public class FraudAlertController {
     
     @GetMapping("/{id}")
     public ResponseEntity<FraudAlertRecord> getAlertById(@PathVariable Long id) {
-        // Implementation would need to be added to service
         return ResponseEntity.notFound().build();
     }
     

@@ -32,7 +32,6 @@ public class FraudRuleController {
     
     @GetMapping("/{id}")
     public ResponseEntity<FraudRule> getRuleById(@PathVariable Long id) {
-        // Implementation would need to be added to service
         return ResponseEntity.notFound().build();
     }
     
